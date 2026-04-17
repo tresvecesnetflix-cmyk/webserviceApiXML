@@ -24,142 +24,142 @@ namespace webserviceApi.Controllers
             this.configuration = configuration;
         }
 
-        [HttpPost]
-        [Authorize]
-        public async Task<ActionResult> Post(XmlDocument PedidoDetalle)
-        {
+        //[HttpPost]
+        //[Authorize]
+        //public async Task<ActionResult> Post(XmlDocument PedidoDetalle)
+        //{
 
-            var connection = configuration.GetConnectionString("ConnectionString");
+        //    var connection = configuration.GetConnectionString("ConnectionString");
 
-             using  var con = new SqlConnection(connection);
+        //     using  var con = new SqlConnection(connection);
  
-            var xmlString = PedidoDetalle.OuterXml;
+        //    var xmlString = PedidoDetalle.OuterXml;
 
-            var usuario = await servicioUsuarios.ObtenerUsuario();
+        //    var usuario = await servicioUsuarios.ObtenerUsuario();
 
-            Console.WriteLine(usuario.Id);
+        //    Console.WriteLine(usuario.Id);
 
-            if (usuario is null)
-            {
-                return Unauthorized("Usuario no autenticado");
+        //    if (usuario is null)
+        //    {
+        //        return Unauthorized("Usuario no autenticado");
 
-            }
+        //    }
 
-            try
-            {
-                  await  con.OpenAsync();
+        //    try
+        //    {
+        //          await  con.OpenAsync();
 
-                var resultXML = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_PedidoDetallePostByUser]",
-                    new { PedidoDetalle = xmlString,UsuarioId=usuario.Id}, commandType: CommandType.StoredProcedure);
+        //        var resultXML = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_PedidoDetallePostByUser]",
+        //            new { PedidoDetalle = xmlString,UsuarioId=usuario.Id}, commandType: CommandType.StoredProcedure);
 
-                if (string.IsNullOrEmpty(resultXML))
-                    return BadRequest();
+        //        if (string.IsNullOrEmpty(resultXML))
+        //            return BadRequest();
 
-                return Content(resultXML, "application/xml");
+        //        return Content(resultXML, "application/xml");
 
-            }catch(SqlException ex)
-            {
+        //    }catch(SqlException ex)
+        //    {
 
-                return StatusCode(500, $"Error del servidor{ex}");
-            }
+        //        return StatusCode(500, $"Error del servidor{ex}");
+        //    }
 
-        }
-
-
-        [HttpGet]
-        [Authorize]
-
-        public async Task<ActionResult> Get(XmlDocument PedidoDetalle)
-        {
-            var connection = configuration.GetConnectionString("ConnectionString");
-
-            using var con = new SqlConnection(connection);
-
-            var usuario = await servicioUsuarios.ObtenerUsuario();
-
-            var StringXML = PedidoDetalle.OuterXml;
-
-            try{
-
-                await con.OpenAsync();
-
-                var Resultado = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_GetPedidoDetalleById]",
-                    new { PedidoDetalle=StringXML, UsuarioId=usuario!.Id}, commandType: CommandType.StoredProcedure);
-
-                if (string.IsNullOrEmpty(Resultado))
+        //}
 
 
+        //[HttpGet]
+        //[Authorize]
+
+        //public async Task<ActionResult> Get(XmlDocument PedidoDetalle)
+        //{
+        //    var connection = configuration.GetConnectionString("ConnectionString");
+
+        //    using var con = new SqlConnection(connection);
+
+        //    var usuario = await servicioUsuarios.ObtenerUsuario();
+
+        //    var StringXML = PedidoDetalle.OuterXml;
+
+        //    try{
+
+        //        await con.OpenAsync();
+
+        //        var Resultado = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_GetPedidoDetalleById]",
+        //            new { PedidoDetalle=StringXML, UsuarioId=usuario!.Id}, commandType: CommandType.StoredProcedure);
+
+        //        if (string.IsNullOrEmpty(Resultado))
 
 
-                    return BadRequest();
 
-                //return Content(Resultado,"application/xml");
 
-                var doc = XDocument.Parse(Resultado);
+        //            return BadRequest();
 
-                var detalles = doc.Descendants("PedidoDetalle");
+        //        //return Content(Resultado,"application/xml");
 
-                if (detalles == null)
-                {
+        //        var doc = XDocument.Parse(Resultado);
 
-                    return BadRequest("Peido no encontrado penudo");
-                }
+        //        var detalles = doc.Descendants("PedidoDetalle");
 
-                var Lista = new List<BitcointTDO>();
-                foreach(var detalle in detalles)
-                {
-                    Lista.Add(new BitcointTDO
-                    {
-                        id = (int)detalle.Element("Id"),
-                        Monto = (decimal)detalle.Element("Total"),
-                        DireccionCliente = (string)detalle.Element("Direccions"),
-                        EmailCliente = usuario.Email
-                    });
+        //        if (detalles == null)
+        //        {
+
+        //            return BadRequest("Peido no encontrado penudo");
+        //        }
+
+        //        var Lista = new List<BitcointTDO>();
+        //        foreach(var detalle in detalles)
+        //        {
+        //            Lista.Add(new BitcointTDO
+        //            {
+        //                id = (int)detalle.Element("Id"),
+        //                Monto = (decimal)detalle.Element("Total"),
+        //                DireccionCliente = (string)detalle.Element("Direccions"),
+        //                EmailCliente = usuario.Email
+        //            });
         
-                };
+        //        };
 
-                return Ok(Lista);
-            }
-            catch (SqlException ex)
-            {
-                return StatusCode(500,$"Error departe del servidor: {ex}");
+        //        return Ok(Lista);
+        //    }
+        //    catch (SqlException ex)
+        //    {
+        //        return StatusCode(500,$"Error departe del servidor: {ex}");
 
-            }
+        //    }
 
-        }
+        //}
 
-        [HttpDelete]
-        [Authorize]
-        public async Task<IActionResult> Delete(XmlDocument PedidoDetalle)
-        {
+        //[HttpDelete]
+        //[Authorize]
+        //public async Task<IActionResult> Delete(XmlDocument PedidoDetalle)
+        //{
 
-            var connection =  configuration.GetConnectionString("ConnectionString");
+        //    var connection =  configuration.GetConnectionString("ConnectionString");
 
-            using var con =  new SqlConnection(connection);
+        //    using var con =  new SqlConnection(connection);
 
-            var xmlString = PedidoDetalle.OuterXml;
+        //    var xmlString = PedidoDetalle.OuterXml;
 
-            var usuario = await servicioUsuarios.ObtenerUsuario();
-            if (usuario == null)
-                return Unauthorized();
-            Console.Write(usuario.Id);
-            try { 
-            await con.OpenAsync();
-                var ResultadoXml = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_deletePedidoDetalleByUser]",
-                                                                              new { DetallePedido = xmlString, UsuarioId=usuario.Id}, commandType: CommandType.StoredProcedure);
-                if (string.IsNullOrEmpty(ResultadoXml))
-                    return BadRequest();
+        //    var usuario = await servicioUsuarios.ObtenerUsuario();
+        //    if (usuario == null)
+        //        return Unauthorized();
+        //    Console.Write(usuario.Id);
+        //    try { 
+        //    await con.OpenAsync();
+        //        var ResultadoXml = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_deletePedidoDetalleByUser]",
+        //                                                                      new { DetallePedido = xmlString, UsuarioId=usuario.Id}, commandType: CommandType.StoredProcedure);
+        //        if (string.IsNullOrEmpty(ResultadoXml))
+        //            return BadRequest();
 
-                return Content(ResultadoXml,"application/xml");
+        //        return Content(ResultadoXml,"application/xml");
             
-            }catch (SqlException ex)
-            {
+        //    }catch (SqlException ex)
+        //    {
 
-                return StatusCode(500,$"Su saldo es insuficiente para realisar esta llamada {ex}");
-            }
+        //        return StatusCode(500,$"Su saldo es insuficiente para realisar esta llamada {ex}");
+        //    }
 
 
-        }
+        //}
 
 
     }

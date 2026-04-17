@@ -48,8 +48,8 @@ namespace webserviceApi.Controllers
             }
         }
 
-        [HttpGet("{id:int}",Name ="ObtenerCategoria")]
-        public async Task<IActionResult>ById(int id)
+        [HttpGet("{Id:int}",Name ="ObtenerCategoria")]
+        public async Task<IActionResult>ById(int Id)
         {
 
             var connection = _configuration.GetConnectionString("ConnectionString");
@@ -61,7 +61,7 @@ namespace webserviceApi.Controllers
                await con.OpenAsync();
                 var xml = await con.QueryFirstOrDefaultAsync<string>(
                     "[dbo].[sp_GetCategoriaByid]",
-                    new {id}, 
+                    new {Id}, 
                     commandType:CommandType.StoredProcedure);
 
                 if (string.IsNullOrEmpty(xml))
@@ -76,10 +76,8 @@ namespace webserviceApi.Controllers
         }
 
         [HttpPost]
-        [Consumes("application/xml")]
-        public async Task<IActionResult>Pots([FromBody] XmlDocument xmlCategoria)
+        public async Task<IActionResult>Pots([FromBody] string xmlCategoria)
         {
-            var xmlString = xmlCategoria.OuterXml;
             var connection = _configuration.GetConnectionString("ConnectionString");
 
             var con = new SqlConnection(connection);
@@ -88,7 +86,7 @@ namespace webserviceApi.Controllers
             {
                 await con.OpenAsync();
                 var nuevoId = await con.QueryFirstOrDefaultAsync<int>("[dbo].[sp_InsertarCategoria]",
-                    new {xmlCategoria=xmlString}, commandType:CommandType.StoredProcedure);
+                    new {xmlCategoria=xmlCategoria}, commandType:CommandType.StoredProcedure);
 
                 if (nuevoId == 0)
                 return BadRequest("No se pudo insertar categoria");
@@ -144,11 +142,16 @@ namespace webserviceApi.Controllers
             }
         }
 
-        [HttpDelete]
-        [Consumes("application/xml")]
-        public async Task<IActionResult> Delete([FromBody] XmlDocument xmlCategoria)
+        [HttpDelete("{Id:int}")]
+        public async Task<IActionResult> Delete(int Id)
         {
-            var xmlString= xmlCategoria.OuterXml;
+            var xmlString= $@"<Categorias>
+                    <Categoria>
+                   <Id>{Id}</Id>
+                  </Categoria>
+                   </Categorias>";
+
+
             var connection = _configuration.GetConnectionString("ConnectionString");
 
             try
@@ -182,7 +185,6 @@ namespace webserviceApi.Controllers
 
         [HttpPost("potsFoto")]
         [Consumes("multipart/form-data")]
-        [Produces("application/xml")]
         public async Task<IActionResult> PotsFoto([FromForm] string Titulo, [FromForm] string Descripcion, [FromForm] IFormFile Foto)
         {
             string? urlFoto = null;

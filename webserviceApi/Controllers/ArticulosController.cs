@@ -18,7 +18,7 @@ namespace webserviceApi.Controllers
 
         public ArticulosController(IConfiguration configuration, IAlmacenadorDeArchivos almacenadorDeArchivos)
         {
-           _configuration = configuration;
+            _configuration = configuration;
             this.almacenadorDeArchivos = almacenadorDeArchivos;
         }
 
@@ -28,7 +28,7 @@ namespace webserviceApi.Controllers
         {
             var connection = _configuration.GetConnectionString("ConnectionString");
 
-            var con =  new SqlConnection(connection);
+            var con = new SqlConnection(connection);
 
             try
             {
@@ -36,14 +36,14 @@ namespace webserviceApi.Controllers
                 await con.OpenAsync();
 
                 var xml = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_GetAllArticulos]",
-                                commandType:CommandType.StoredProcedure);
+                                commandType: CommandType.StoredProcedure);
 
                 if (xml is null)
                     return NotFound("No se encotraron categorias");
 
-                return Content(xml,"application/xml");
+                return Content(xml, "application/xml");
 
-            }catch(Exception ex)
+            } catch (Exception ex)
             {
 
                 return StatusCode(500, $"Error al obtener respuesta del servidor: {ex}");
@@ -52,20 +52,28 @@ namespace webserviceApi.Controllers
 
         }
 
-        [HttpGet("Id",Name ="ObtenerArticulo")]
-        public async Task<IActionResult> GetById(XmlDocument xmlArticulos)
+        [HttpGet("{Id:int}", Name = "ObtenerArticulo")]
+        public async Task<IActionResult> GetById(int Id)
         {
             var connection = _configuration.GetConnectionString("ConnectionString");
 
             var con = new SqlConnection(connection);
 
-            var xmlString = xmlArticulos.OuterXml;
+
+            //convertimos a XML el objeto recibido para poder pasarlo al procedimiento almacenado
+
+            var xmlString = $@"<Articulos>
+                <Articulo>
+                <Id>{Id}</Id>
+                </Articulo>
+                </Articulos>";
+
             try
             {
                 await con.OpenAsync();
 
                 var xmlResult = await con.QueryFirstOrDefaultAsync<string>("[dbo].[sp_GetArituloById]",
-                    new {xmlArticulo=xmlArticulos}, commandType: CommandType.StoredProcedure);
+                    new { xmlArticulo = xmlString }, commandType: CommandType.StoredProcedure);
 
                 if (xmlResult is null)
                     return NotFound("no se encotro articulo");
@@ -73,11 +81,11 @@ namespace webserviceApi.Controllers
                 return Content(xmlResult, "application/xml");
 
 
-            }catch (Exception ex)
+            } catch (Exception ex)
             {
 
 
-                return StatusCode(500, $"Error de parte del servidor {ex }");
+                return StatusCode(500, $"Error de parte del servidor {ex}");
             }
 
         }
@@ -85,48 +93,48 @@ namespace webserviceApi.Controllers
 
         [HttpPost]
         [Consumes("application/xml")]
-        public async Task<IActionResult> Post(XmlDocument xmlArticulo)
+        public async Task<IActionResult> Post([FromBody] string xmlArticulo)
         {
 
             var connection = _configuration.GetConnectionString("ConnectionString");
 
-            var con= new SqlConnection(connection);
-
-            var xmlString= xmlArticulo.OuterXml;
+            var con = new SqlConnection(connection);
 
             try
             {
-               await con.OpenAsync();
+                await con.OpenAsync();
 
-             var xmlResult=   await con.QueryFirstOrDefaultAsync<int>("[dbo].sp_postArticulo",
-                    new { xmlArticulo = xmlString }, commandType: CommandType.StoredProcedure);
+                var xmlResult = await con.QueryFirstOrDefaultAsync<int>("[dbo].sp_postArticulo",
+                       new { xmlArticulo = xmlArticulo }, commandType: CommandType.StoredProcedure);
 
-                if (xmlResult==0)
+                if (xmlResult == 0)
                 {
                     return NotFound("NO SE INGRESO ARTICULO");
                 }
-                
-                return CreatedAtRoute("ObtenerArticulo", new {Id=xmlResult},xmlResult);
 
-            }catch(SqlException ex)
+                return CreatedAtRoute("ObtenerArticulo", new { Id = xmlResult }, xmlResult);
+
+            } catch (SqlException ex)
             {
 
-                return StatusCode(500,$"Error de parte del server: {ex}");
+                return StatusCode(500, $"Error de parte del server: {ex}");
             }
 
 
         }
 
-        [HttpDelete]
-        [Consumes("application/xml")]
-        public async Task<IActionResult> Delete(XmlDocument xmlArticulo)
+        [HttpDelete("{Id:int}")]   
+        public async Task<IActionResult> Delete(int Id)
         {
             var connection = _configuration.GetConnectionString("ConnectionString");
 
-            var xmlString = xmlArticulo.OuterXml;
-
             var con = new SqlConnection(connection);
 
+            var xmlString = $@"<Articulos>
+                <Articulo>
+                <Id>{Id}</Id>
+                </Articulo>
+                </Articulos>";
 
             try
             {
@@ -138,7 +146,7 @@ namespace webserviceApi.Controllers
                 if (string.IsNullOrEmpty(xmlResult))
                     return NotFound("No se pudo encotrar la categoria");
 
-                return Content(xmlResult,"applicatiton/xml");
+                return Content(xmlResult,"application/xml");
 
             }catch (SqlException ex)
             {
@@ -148,10 +156,9 @@ namespace webserviceApi.Controllers
 
         }
 
-        [HttpPost("Foto")]
+        [HttpPost("foto")]
         [Consumes("multipart/form-data")]
-        [Produces("application/xml")]
-        public async Task<IActionResult> PostFoto([FromForm] string Nombre, [FromForm] string Descripcion, [FromForm] float Precio,
+        public async Task<IActionResult> PostFoto([FromForm] string Nombre, [FromForm] string Descripcion, [FromForm] decimal Precio,
                                                   [FromForm] int CategoriaId, [FromForm] int Sotck, [FromForm] string ColoresDisponibles, 
                                                   [FromForm] string TallasDisponibles, [FromForm]IFormFile Foto)
         {
@@ -159,7 +166,7 @@ namespace webserviceApi.Controllers
 
             var connection = _configuration.GetConnectionString("ConnectionString");
 
-            var con = new SqlConnection(connection);
+           using var con = new SqlConnection(connection);
 
             string? UrlFoto = null;
 
