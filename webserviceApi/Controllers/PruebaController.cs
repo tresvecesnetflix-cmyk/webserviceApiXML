@@ -4,18 +4,19 @@ using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
 
-namespace ApiBackend.Controllers;
+namespace ApiBackend.Controllers
+{ 
 
 [ApiController]
 [Route("api/[controller]")]
 public class XmlController : ControllerBase
 {
-    private readonly IConfiguration _configuration;
+    //private readonly IConfiguration _configuration;
 
-    public XmlController(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
+    //public XmlController(IConfiguration configuration)
+    //{
+    //    _configuration = configuration;
+    //}
 
     //[HttpGet("{id}")]
   
@@ -48,4 +49,5 @@ public class XmlController : ControllerBase
     //        return StatusCode(500, $"Error al ejecutar el SP: {ex.Message}");
     //    }
     //}
+}
 }

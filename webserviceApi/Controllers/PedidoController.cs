@@ -15,14 +15,14 @@ namespace webserviceApi.Controllers
     [Route("api/pedidos")]
     public class PedidoController:ControllerBase
     {
-        private readonly IServicioUsuarios servicioUsuarios;
-        private readonly IConfiguration configuration;
+        //private readonly IServicioUsuarios servicioUsuarios;
+        //private readonly IConfiguration configuration;
 
-        public PedidoController(IServicioUsuarios servicioUsuarios, IConfiguration configuration )
-        {
-            this.servicioUsuarios = servicioUsuarios;
-            this.configuration = configuration;
-        }
+        //public PedidoController(IServicioUsuarios servicioUsuarios, IConfiguration configuration )
+        //{
+        //    this.servicioUsuarios = servicioUsuarios;
+        //    this.configuration = configuration;
+        //}
 
         //[HttpPost]
         //[Authorize]

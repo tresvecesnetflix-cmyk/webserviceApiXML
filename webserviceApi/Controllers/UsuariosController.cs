@@ -13,127 +13,127 @@ namespace webserviceApi.Controllers
     [Route("api/usuarios")]
     public class UsuariosController: ControllerBase
     {
-        private readonly UserManager<IdentityUser> userManager;
-        private readonly SignInManager<IdentityUser> signInManager;
-        private readonly IConfiguration configuration;
+        //private readonly UserManager<IdentityUser> userManager;
+        //private readonly SignInManager<IdentityUser> signInManager;
+        //private readonly IConfiguration configuration;
 
-        public UsuariosController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IConfiguration configuration)
-        {
-            this.userManager = userManager;
-            this.signInManager = signInManager;
-            this.configuration = configuration;
-        }
+        //public UsuariosController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IConfiguration configuration)
+        //{
+        //    this.userManager = userManager;
+        //    this.signInManager = signInManager;
+        //    this.configuration = configuration;
+        //}
 
-        [HttpPost("registro")]
+        //[HttpPost("registro")]
 
-        public async Task<ActionResult<RespuestaAutenticacionDTO>> Registro(CredencialesUsuarioDTO credencialesUsuarioDTO)
-        {
-            //instasnciamos el usuario 
-            var usuario = new IdentityUser
-            {
-                UserName = credencialesUsuarioDTO.email,
-                Email = credencialesUsuarioDTO.email
+        //public async Task<ActionResult<RespuestaAutenticacionDTO>> Registro(CredencialesUsuarioDTO credencialesUsuarioDTO)
+        //{
+        //    //instasnciamos el usuario 
+        //    var usuario = new IdentityUser
+        //    {
+        //        UserName = credencialesUsuarioDTO.email,
+        //        Email = credencialesUsuarioDTO.email
 
-            };
+        //    };
 
-            //creamos el usuario y pasamos el usuario y el password
+        //    //creamos el usuario y pasamos el usuario y el password
 
-            var resultado = await userManager.CreateAsync(usuario, credencialesUsuarioDTO.password);
-            if (resultado.Succeeded)
-            {
-                return await ConstruiToken(credencialesUsuarioDTO);
+        //    var resultado = await userManager.CreateAsync(usuario, credencialesUsuarioDTO.password);
+        //    if (resultado.Succeeded)
+        //    {
+        //        return await ConstruiToken(credencialesUsuarioDTO);
 
-            }
-            else
-            {
-                return RetorLoginIncorrecto();
+        //    }
+        //    else
+        //    {
+        //        return RetorLoginIncorrecto();
 
-            }
+        //    }
 
-        }
-        [HttpPost("Login")]
+        //}
+        //[HttpPost("Login")]
 
-        public async Task<ActionResult<RespuestaAutenticacionDTO>> Login(CredencialesUsuarioDTO credencialesUsuarioDTO)
-        {
+        //public async Task<ActionResult<RespuestaAutenticacionDTO>> Login(CredencialesUsuarioDTO credencialesUsuarioDTO)
+        //{
 
-            //buscamos el usuario
+        //    //buscamos el usuario
 
-            var usuario = await userManager.FindByEmailAsync(credencialesUsuarioDTO.email);
-            if (usuario is null)
-            {
-                return RetorLoginIncorrecto();
+        //    var usuario = await userManager.FindByEmailAsync(credencialesUsuarioDTO.email);
+        //    if (usuario is null)
+        //    {
+        //        return RetorLoginIncorrecto();
                 
-            }
+        //    }
 
-            //verificamos si la contraseña creada es la correcta 
-
-
-            var resultado = await signInManager.CheckPasswordSignInAsync(usuario, credencialesUsuarioDTO.password, lockoutOnFailure: false);
-            if (resultado.Succeeded)
-            {
-                return await ConstruiToken(credencialesUsuarioDTO);
-
-            }
-            else
-            {
-
-                return RetorLoginIncorrecto();
-
-            }
-        }
-
-        private ActionResult RetorLoginIncorrecto()
-        {
-            ModelState.AddModelError(string.Empty,"Login Incorrecto");
-            return ValidationProblem();
+        //    //verificamos si la contraseña creada es la correcta 
 
 
-        }
+        //    var resultado = await signInManager.CheckPasswordSignInAsync(usuario, credencialesUsuarioDTO.password, lockoutOnFailure: false);
+        //    if (resultado.Succeeded)
+        //    {
+        //        return await ConstruiToken(credencialesUsuarioDTO);
 
-        private async Task<ActionResult<RespuestaAutenticacionDTO>> ConstruiToken(CredencialesUsuarioDTO credencialesUsuarioDTO)
-        {
-            var claims = new List<Claim>
-            {
-                new Claim("email", credencialesUsuarioDTO.email),
-                new Claim("Lo que yo quiera","cual quier valor")
+        //    }
+        //    else
+        //    {
 
-            };
+        //        return RetorLoginIncorrecto();
 
+        //    }
+        //}
 
-            //usamos userManager para busac el suario por el Email
-
-            var usuario = await userManager.FindByEmailAsync(credencialesUsuarioDTO.email);
-
-            //optenemos los claims asociados al usuario de la base de datos
-
-            var claimsDB = await userManager.GetClaimsAsync(usuario!);
-
-            //agreamos los claims de la base de atos al listado de claims 
-
-            claims.AddRange(claimsDB);
-
-            //Traemos la llave secreta que se encuentra en una proveedor de configuraciones
-
-            var llave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["llavejwt"]!));
+        //private ActionResult RetorLoginIncorrecto()
+        //{
+        //    ModelState.AddModelError(string.Empty,"Login Incorrecto");
+        //    return ValidationProblem();
 
 
+        //}
 
-            //credenciales firmadas.
-            var credenciales = new SigningCredentials(llave, SecurityAlgorithms.HmacSha256);
-            var expiracion = DateTime.UtcNow.AddYears(1); //<--para que el token tenga un ao de vigencia
+        //private async Task<ActionResult<RespuestaAutenticacionDTO>> ConstruiToken(CredencialesUsuarioDTO credencialesUsuarioDTO)
+        //{
+        //    var claims = new List<Claim>
+        //    {
+        //        new Claim("email", credencialesUsuarioDTO.email),
+        //        new Claim("Lo que yo quiera","cual quier valor")
 
-            //emisor null, auddiencia null
-            var tokenDeSeguridad = new JwtSecurityToken(issuer: null, audience: null, claims: claims, expires: expiracion, signingCredentials: credenciales);
-            //generamos el token
+        //    };
 
-            var token = new JwtSecurityTokenHandler().WriteToken(tokenDeSeguridad);
-            return new RespuestaAutenticacionDTO()
-            {
-                Token = token,
-                Expiracion = expiracion,
-                UsuarioId = usuario!.Id
-            };
-        }
+
+        //    //usamos userManager para busac el suario por el Email
+
+        //    var usuario = await userManager.FindByEmailAsync(credencialesUsuarioDTO.email);
+
+        //    //optenemos los claims asociados al usuario de la base de datos
+
+        //    var claimsDB = await userManager.GetClaimsAsync(usuario!);
+
+        //    //agreamos los claims de la base de atos al listado de claims 
+
+        //    claims.AddRange(claimsDB);
+
+        //    //Traemos la llave secreta que se encuentra en una proveedor de configuraciones
+
+        //    var llave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["llavejwt"]!));
+
+
+
+        //    //credenciales firmadas.
+        //    var credenciales = new SigningCredentials(llave, SecurityAlgorithms.HmacSha256);
+        //    var expiracion = DateTime.UtcNow.AddYears(1); //<--para que el token tenga un ao de vigencia
+
+        //    //emisor null, auddiencia null
+        //    var tokenDeSeguridad = new JwtSecurityToken(issuer: null, audience: null, claims: claims, expires: expiracion, signingCredentials: credenciales);
+        //    //generamos el token
+
+        //    var token = new JwtSecurityTokenHandler().WriteToken(tokenDeSeguridad);
+        //    return new RespuestaAutenticacionDTO()
+        //    {
+        //        Token = token,
+        //        Expiracion = expiracion,
+        //        UsuarioId = usuario!.Id
+        //    };
+        //}
 
     }
     }
