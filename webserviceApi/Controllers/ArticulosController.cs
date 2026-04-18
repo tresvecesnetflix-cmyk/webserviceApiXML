@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.Xml;
+using webserviceApi.DTOs;
 using webserviceApi.Servicios;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -95,19 +96,19 @@ namespace webserviceApi.Controllers
 
         [HttpPost]
         [Consumes("application/xml")]
-        public async Task<IActionResult> Post([FromBody] string xmlArticulo)
+        public async Task<IActionResult> Post([FromBody] XmlDocument xmlArticulo)
         {
 
             var connection = _configuration.GetConnectionString("ConnectionString");
 
             var con = new SqlConnection(connection);
-
+            var xmlString = xmlArticulo.OuterXml;
             try
             {
                 await con.OpenAsync();
 
                 var xmlResult = await con.QueryFirstOrDefaultAsync<int>("[dbo].sp_postArticulo",
-                       new { xmlArticulo = xmlArticulo }, commandType: CommandType.StoredProcedure);
+                       new { xmlArticulo = xmlString }, commandType: CommandType.StoredProcedure);
 
                 if (xmlResult == 0)
                 {
@@ -160,62 +161,60 @@ namespace webserviceApi.Controllers
 
         }
 
-        //[HttpPost("foto")]
-        //[Consumes("multipart/form-data")]
-        //public async Task<IActionResult> PostFoto([FromForm] string Nombre, [FromForm] string Descripcion, [FromForm] decimal Precio,
-        //                                          [FromForm] int CategoriaId, [FromForm] int Sotck, [FromForm] string ColoresDisponibles,
-        //                                          [FromForm] string TallasDisponibles, [FromForm] IFormFile Foto)
-        //{
+        [HttpPost("foto")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> PostFoto([FromForm] ArticuloFotoDTO model)
+        {
 
 
-        //    var connection = _configuration.GetConnectionString("ConnectionString");
+            var connection = _configuration.GetConnectionString("ConnectionString");
 
-        //    using var con = new SqlConnection(connection);
+            using var con = new SqlConnection(connection);
 
-        //    string? UrlFoto = null;
+            string? UrlFoto = null;
 
-        //    if (Foto != null)
-        //    {
+            if (model.Foto != null )
+            {
 
-        //        UrlFoto = await almacenadorDeArchivos.Almacenar("articulos", Foto);
-        //    }
+                UrlFoto = await almacenadorDeArchivos.Almacenar("articulos", model.Foto);
+            }
 
-        //    var xmlString = $@"
-        //     <Articulos>
-        //     <Articulo>
-        //     <Nombre>{Nombre}</Nombre>
-        //     <Descripcion>{Descripcion} </Descripcion>
-        //     <Precio>{Precio}</Precio>
-        //     <CategoriaId>{CategoriaId}</CategoriaId>
-        //     <Sotck>{Sotck}</Sotck>
-        //     <ColoresDisponibles>{ColoresDisponibles}</ColoresDisponibles>
-        //     <TallasDisponibles>{TallasDisponibles}</TallasDisponibles>
-        //     <Foto>{UrlFoto}</Foto>
-        //     </Articulo>
-        //     </Articulos>
-        //      ";
+            var xmlString = $@"
+             <Articulos>
+             <Articulo>
+             <Nombre>{model.Nombre}</Nombre>
+             <Descripcion>{model.Descripcion} </Descripcion>
+             <Precio>{model.Precio}</Precio>
+             <CategoriaId>{model.CategoriaId}</CategoriaId>
+             <Sotck>{model.Sotck}</Sotck>
+             <ColoresDisponibles>{model.ColoresDisponibles}</ColoresDisponibles>
+             <TallasDisponibles>{model.TallasDisponibles}</TallasDisponibles>
+             <Foto>{UrlFoto}</Foto>
+             </Articulo>
+             </Articulos>
+              ";
 
-        //    try
-        //    {
+            try
+            {
 
-        //        await con.OpenAsync();
+                await con.OpenAsync();
 
-        //        var xmlResult = await con.QueryFirstOrDefaultAsync<int>("[dbo].sp_postFotoArticulo",
-        //                                 new { xmlArticulo = xmlString }, commandType: CommandType.StoredProcedure);
+                var xmlResult = await con.QueryFirstOrDefaultAsync<int>("[dbo].sp_postFotoArticulo",
+                                         new { xmlArticulo = xmlString }, commandType: CommandType.StoredProcedure);
 
 
-        //        if (xmlResult == 0)
-        //            return NotFound("No se ingreso el articulo");
+                if (xmlResult == 0)
+                    return NotFound("No se ingreso el articulo");
 
-        //        return CreatedAtRoute("ObtenerArticulo", new { id = xmlResult }, xmlResult);
+                return CreatedAtRoute("ObtenerArticulo", new { id = xmlResult }, xmlResult);
 
-        //    }
-        //    catch (SqlException ex)
-        //    {
+            }
+            catch (SqlException ex)
+            {
 
-        //        return StatusCode(500, $"Error Conectar con el servidor:{ex}");
-        //    }
+                return StatusCode(500, $"Error Conectar con el servidor:{ex}");
+            }
 
-        //}
+        }
     }
 }
