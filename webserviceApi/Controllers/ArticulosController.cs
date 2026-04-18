@@ -160,62 +160,62 @@ namespace webserviceApi.Controllers
 
         }
 
-        [HttpPost("foto")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> PostFoto([FromForm] string Nombre, [FromForm] string Descripcion, [FromForm] decimal Precio,
-                                                  [FromForm] int CategoriaId, [FromForm] int Sotck, [FromForm] string ColoresDisponibles,
-                                                  [FromForm] string TallasDisponibles, [FromForm] IFormFile Foto)
-        {
+        //[HttpPost("foto")]
+        //[Consumes("multipart/form-data")]
+        //public async Task<IActionResult> PostFoto([FromForm] string Nombre, [FromForm] string Descripcion, [FromForm] decimal Precio,
+        //                                          [FromForm] int CategoriaId, [FromForm] int Sotck, [FromForm] string ColoresDisponibles,
+        //                                          [FromForm] string TallasDisponibles, [FromForm] IFormFile Foto)
+        //{
 
 
-            var connection = _configuration.GetConnectionString("ConnectionString");
+        //    var connection = _configuration.GetConnectionString("ConnectionString");
 
-            using var con = new SqlConnection(connection);
+        //    using var con = new SqlConnection(connection);
 
-            string? UrlFoto = null;
+        //    string? UrlFoto = null;
 
-            if (Foto != null)
-            {
+        //    if (Foto != null)
+        //    {
 
-                UrlFoto = await almacenadorDeArchivos.Almacenar("articulos", Foto);
-            }
+        //        UrlFoto = await almacenadorDeArchivos.Almacenar("articulos", Foto);
+        //    }
 
-            var xmlString = $@"
-             <Articulos>
-             <Articulo>
-             <Nombre>{Nombre}</Nombre>
-             <Descripcion>{Descripcion} </Descripcion>
-             <Precio>{Precio}</Precio>
-             <CategoriaId>{CategoriaId}</CategoriaId>
-             <Sotck>{Sotck}</Sotck>
-             <ColoresDisponibles>{ColoresDisponibles}</ColoresDisponibles>
-             <TallasDisponibles>{TallasDisponibles}</TallasDisponibles>
-             <Foto>{Foto}</Foto>
-             </Articulo>
-             </Articulos>
-              ";
+        //    var xmlString = $@"
+        //     <Articulos>
+        //     <Articulo>
+        //     <Nombre>{Nombre}</Nombre>
+        //     <Descripcion>{Descripcion} </Descripcion>
+        //     <Precio>{Precio}</Precio>
+        //     <CategoriaId>{CategoriaId}</CategoriaId>
+        //     <Sotck>{Sotck}</Sotck>
+        //     <ColoresDisponibles>{ColoresDisponibles}</ColoresDisponibles>
+        //     <TallasDisponibles>{TallasDisponibles}</TallasDisponibles>
+        //     <Foto>{UrlFoto}</Foto>
+        //     </Articulo>
+        //     </Articulos>
+        //      ";
 
-            try
-            {
+        //    try
+        //    {
 
-                await con.OpenAsync();
+        //        await con.OpenAsync();
 
-                var xmlResult = await con.QueryFirstOrDefaultAsync<int>("[dbo].sp_postFotoArticulo",
-                                         new { xmlArticulo = xmlString }, commandType: CommandType.StoredProcedure);
+        //        var xmlResult = await con.QueryFirstOrDefaultAsync<int>("[dbo].sp_postFotoArticulo",
+        //                                 new { xmlArticulo = xmlString }, commandType: CommandType.StoredProcedure);
 
 
-                if (xmlResult == 0)
-                    return NotFound("No se ingreso el articulo");
+        //        if (xmlResult == 0)
+        //            return NotFound("No se ingreso el articulo");
 
-                return CreatedAtRoute("ObtenerArticulo", new { id = xmlResult }, xmlResult);
+        //        return CreatedAtRoute("ObtenerArticulo", new { id = xmlResult }, xmlResult);
 
-            }
-            catch (SqlException ex)
-            {
+        //    }
+        //    catch (SqlException ex)
+        //    {
 
-                return StatusCode(500, $"Error Conectar con el servidor:{ex}");
-            }
+        //        return StatusCode(500, $"Error Conectar con el servidor:{ex}");
+        //    }
 
-        }
+        //}
     }
 }
