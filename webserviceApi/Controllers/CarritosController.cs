@@ -12,171 +12,171 @@ namespace webserviceApi.Controllers
     [Route("api/Carrito")]
     public class CarritosController: ControllerBase
     {
-        private readonly IServicioUsuarios servicioUsuarios;
-        private readonly IConfiguration configuration;
+        //private readonly IServicioUsuarios servicioUsuarios;
+        //private readonly IConfiguration configuration;
 
-        public CarritosController(IServicioUsuarios servicioUsuarios, IConfiguration configuration)
-        {
-            this.servicioUsuarios = servicioUsuarios;
-            this.configuration = configuration;
-        }
+        //public CarritosController(IServicioUsuarios servicioUsuarios, IConfiguration configuration)
+        //{
+        //    this.servicioUsuarios = servicioUsuarios;
+        //    this.configuration = configuration;
+        //}
 
-        [HttpPost]
-        [Authorize]
-        public async Task<ActionResult> Post([FromBody] string Carrito)
-        {
+        //[HttpPost]
+        //[Authorize]
+        //public async Task<ActionResult> Post([FromBody] string Carrito)
+        //{
 
-            var connection = configuration.GetConnectionString("ConnectionString");
+        //    var connection = configuration.GetConnectionString("ConnectionString");
 
-            using var con =  new SqlConnection(connection);
+        //    using var con =  new SqlConnection(connection);
 
-            var usuario = await servicioUsuarios.ObtenerUsuario();
-            if(usuario is null)
-            {
+        //    var usuario = await servicioUsuarios.ObtenerUsuario();
+        //    if(usuario is null)
+        //    {
 
-                return Unauthorized();
-            }
-
-
-            try
-            {
-               await con.OpenAsync();
-
-                var ResultadoXML = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_carritoByUser]",
-                                             new {Carrito= Carrito, UsuarioId=usuario.Id }, commandType: CommandType.StoredProcedure);
-
-                if (string.IsNullOrEmpty(ResultadoXML))
-                    return BadRequest();
-
-                return Content(ResultadoXML, "application/xml");
-            }catch(SqlException ex)
-            {
-
-                return StatusCode(500,$"Error departe del servidor {ex}");
-
-            }
-
-        }
-
-        [HttpGet("{Id}")]
-        [Authorize]
-        public async Task<ActionResult> Get(int Id)
-        {
-            var connection = configuration.GetConnectionString("ConnectionString");
-
-            var Carrito = $@"<CarritoItems>
-                            <CarritoItem>
-                            <Id>{Id}</Id>
-                             <CarritoItemItem>
-                            </CarritoItems>";
-
-            using var con = new SqlConnection(connection);
-
-            var usuario = await servicioUsuarios.ObtenerUsuario();
-            if(usuario is null)
-            {
-
-                return Unauthorized();
-            }
-
-            try
-            {
-                await con.OpenAsync();
-
-                var ResultadoXML = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_getCarritoByUser]",
-                                             new {Carrito= Carrito, UsuarioId=usuario.Id}, commandType: CommandType.StoredProcedure);
-
-                if (string.IsNullOrEmpty(ResultadoXML))
-                    return BadRequest();
-
-                return Content(ResultadoXML,"application/xml");
+        //        return Unauthorized();
+        //    }
 
 
-            }catch(SqlException ex)
-            {
+        //    try
+        //    {
+        //       await con.OpenAsync();
 
-                return StatusCode(500,$"Error departe del servidor {ex}");
-            }
+        //        var ResultadoXML = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_carritoByUser]",
+        //                                     new {Carrito= Carrito, UsuarioId=usuario.Id }, commandType: CommandType.StoredProcedure);
 
+        //        if (string.IsNullOrEmpty(ResultadoXML))
+        //            return BadRequest();
 
-        }
+        //        return Content(ResultadoXML, "application/xml");
+        //    }catch(SqlException ex)
+        //    {
 
-        [HttpDelete("{Id}")]
-        [Authorize]
-        public async Task<ActionResult> Delete(int Id)
-        {
-            var connection = configuration.GetConnectionString("ConnectionString");
+        //        return StatusCode(500,$"Error departe del servidor {ex}");
 
-            var Carrito = $@"<CarritoItems>
-                            <CarritoItem>
-                            <Id>{Id}</Id>
-                             <CarritoItemItem>
-                            </CarritoItems>";
+        //    }
 
-            using var con = new SqlConnection(connection);
+        //}
 
-            var usuario = await servicioUsuarios.ObtenerUsuario();
-            if (usuario is null)
-            {
-                return Unauthorized();
-            }
+        //[HttpGet("{Id}")]
+        //[Authorize]
+        //public async Task<ActionResult> Get(int Id)
+        //{
+        //    var connection = configuration.GetConnectionString("ConnectionString");
 
-            try
-            {
-                await con.OpenAsync();
+        //    var Carrito = $@"<CarritoItems>
+        //                    <CarritoItem>
+        //                    <Id>{Id}</Id>
+        //                     <CarritoItemItem>
+        //                    </CarritoItems>";
 
-                var respuestaXML = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_deleteCarritoByUser]",
-                                           new {Carrito= Carrito, UsuarioId= usuario.Id}, commandType: CommandType.StoredProcedure);
+        //    using var con = new SqlConnection(connection);
 
-                if (string.IsNullOrEmpty(respuestaXML))
-                    return BadRequest();
+        //    var usuario = await servicioUsuarios.ObtenerUsuario();
+        //    if(usuario is null)
+        //    {
 
-                return Content(respuestaXML,"application/xml");
+        //        return Unauthorized();
+        //    }
 
-            }
-            catch(SqlException ex)
-            {
+        //    try
+        //    {
+        //        await con.OpenAsync();
 
-                return StatusCode(500, $"Error departe del servidor {ex}");
-            }
+        //        var ResultadoXML = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_getCarritoByUser]",
+        //                                     new {Carrito= Carrito, UsuarioId=usuario.Id}, commandType: CommandType.StoredProcedure);
 
-        }
-        [HttpPut]
-        [Authorize]
-        public async Task<ActionResult> Put([FromBody] string Carrito )
-        {
-            var connection = configuration.GetConnectionString("ConnectionString");
+        //        if (string.IsNullOrEmpty(ResultadoXML))
+        //            return BadRequest();
 
-            using var con = new SqlConnection(connection);
-
-            var usuario = await servicioUsuarios.ObtenerUsuario();
-            if(usuario  is null)
-                return Unauthorized();
-
-            try
-            {
-                await con.OpenAsync();
-
-                var resultadoXML = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_UpdateCarritoByUser]",
-                                         new {Carrito= Carrito, UsuarioId=usuario.Id},commandType: CommandType.StoredProcedure);
+        //        return Content(ResultadoXML,"application/xml");
 
 
-                if (string.IsNullOrEmpty(resultadoXML))
-                    return BadRequest();
+        //    }catch(SqlException ex)
+        //    {
 
-                return Content(resultadoXML,"application/xml");
-
-
-            }catch(SqlException ex)
-            {
+        //        return StatusCode(500,$"Error departe del servidor {ex}");
+        //    }
 
 
-                return StatusCode(500,$"Error departe del servidor {ex}");
-            }
+        //}
+
+        //[HttpDelete("{Id}")]
+        //[Authorize]
+        //public async Task<ActionResult> Delete(int Id)
+        //{
+        //    var connection = configuration.GetConnectionString("ConnectionString");
+
+        //    var Carrito = $@"<CarritoItems>
+        //                    <CarritoItem>
+        //                    <Id>{Id}</Id>
+        //                     <CarritoItemItem>
+        //                    </CarritoItems>";
+
+        //    using var con = new SqlConnection(connection);
+
+        //    var usuario = await servicioUsuarios.ObtenerUsuario();
+        //    if (usuario is null)
+        //    {
+        //        return Unauthorized();
+        //    }
+
+        //    try
+        //    {
+        //        await con.OpenAsync();
+
+        //        var respuestaXML = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_deleteCarritoByUser]",
+        //                                   new {Carrito= Carrito, UsuarioId= usuario.Id}, commandType: CommandType.StoredProcedure);
+
+        //        if (string.IsNullOrEmpty(respuestaXML))
+        //            return BadRequest();
+
+        //        return Content(respuestaXML,"application/xml");
+
+        //    }
+        //    catch(SqlException ex)
+        //    {
+
+        //        return StatusCode(500, $"Error departe del servidor {ex}");
+        //    }
+
+        //}
+        //[HttpPut]
+        //[Authorize]
+        //public async Task<ActionResult> Put([FromBody] string Carrito )
+        //{
+        //    var connection = configuration.GetConnectionString("ConnectionString");
+
+        //    using var con = new SqlConnection(connection);
+
+        //    var usuario = await servicioUsuarios.ObtenerUsuario();
+        //    if(usuario  is null)
+        //        return Unauthorized();
+
+        //    try
+        //    {
+        //        await con.OpenAsync();
+
+        //        var resultadoXML = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_UpdateCarritoByUser]",
+        //                                 new {Carrito= Carrito, UsuarioId=usuario.Id},commandType: CommandType.StoredProcedure);
+
+
+        //        if (string.IsNullOrEmpty(resultadoXML))
+        //            return BadRequest();
+
+        //        return Content(resultadoXML,"application/xml");
+
+
+        //    }catch(SqlException ex)
+        //    {
+
+
+        //        return StatusCode(500,$"Error departe del servidor {ex}");
+        //    }
 
 
 
 
-        }
+        //}
     }
 }

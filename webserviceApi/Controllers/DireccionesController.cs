@@ -15,44 +15,44 @@ namespace webserviceApi.Controllers
     public class DireccionesController : ControllerBase
     {
 
-        private readonly IConfiguration _configuration;
-        private readonly IServicioUsuarios _servicioUsuarios;
-        private readonly string _ConnectionString;
+        //private readonly IConfiguration _configuration;
+        //private readonly IServicioUsuarios _servicioUsuarios;
+        //private readonly string _ConnectionString;
 
-        public DireccionesController(IConfiguration configuration, IServicioUsuarios servicioUsuarios)
-        {
-            _configuration = configuration;
-            _servicioUsuarios = servicioUsuarios;
-            _ConnectionString = _configuration.GetConnectionString("ConnectionString") ?? throw new InvalidOperationException("No se encontro 'Connection String' en configuracion");
+        //public DireccionesController(IConfiguration configuration, IServicioUsuarios servicioUsuarios)
+        //{
+        //    _configuration = configuration;
+        //    _servicioUsuarios = servicioUsuarios;
+        //    _ConnectionString = _configuration.GetConnectionString("ConnectionString") ?? throw new InvalidOperationException("No se encontro 'Connection String' en configuracion");
   
-        }
+        //}
 
-        [HttpGet]
+        //[HttpGet]
 
-        public async Task<IActionResult> GetAll()
-        {
-            var connection = _configuration.GetConnectionString("ConnectionString");
+        //public async Task<IActionResult> GetAll()
+        //{
+        //    var connection = _configuration.GetConnectionString("ConnectionString");
 
-            using var con = new SqlConnection(connection);
+        //    using var con = new SqlConnection(connection);
 
-            try {
+        //    try {
 
-                await con.OpenAsync();
+        //        await con.OpenAsync();
 
-                var xmlResult = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_GetAllDirecciones]",
-                    commandType: CommandType.StoredProcedure);
+        //        var xmlResult = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_GetAllDirecciones]",
+        //            commandType: CommandType.StoredProcedure);
 
-                if (string.IsNullOrEmpty(xmlResult))
-                    return NotFound("No se encontrar elementos");
+        //        if (string.IsNullOrEmpty(xmlResult))
+        //            return NotFound("No se encontrar elementos");
 
-                return Content(xmlResult, "application/xml");
-            } catch (SqlException ex)
-            {
+        //        return Content(xmlResult, "application/xml");
+        //    } catch (SqlException ex)
+        //    {
 
-                return StatusCode(500, $"error con el servidor {ex}");
-            }
+        //        return StatusCode(500, $"error con el servidor {ex}");
+        //    }
 
-        }
+        //}
 
         //[HttpGet("Id", Name = "ExtraerDireccion")]
         //[Consumes("application/xml")]
