@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.Xml;
 using webserviceApi.DTOs;
+using webserviceApi.Servicios;
 using webserviceApi.Servicios.Externos;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -15,11 +16,12 @@ namespace webserviceApi.Controllers
     public class ArticulosController : ControllerBase
     {
         private readonly IConfiguration _configuration;
+        private readonly IArticuloServicio articuloServicio;
         private readonly IAlmacenadorDeArchivos almacenadorDeArchivos;
 
-        public ArticulosController(IConfiguration configuration, IAlmacenadorDeArchivos almacenadorDeArchivos)
+        public ArticulosController(IArticuloServicio articuloServicio, IAlmacenadorDeArchivos almacenadorDeArchivos)
         {
-            _configuration = configuration;
+            this.articuloServicio = articuloServicio;
             this.almacenadorDeArchivos = almacenadorDeArchivos;
         }
 
@@ -27,22 +29,16 @@ namespace webserviceApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var connection = _configuration.GetConnectionString("ConnectionString");
-
-            var con = new SqlConnection(connection);
-
+           
             try
             {
+                var XML = await articuloServicio.ObtenerTodos();
+           
 
-                await con.OpenAsync();
-
-                var xml = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_GetAllArticulos]",
-                                commandType: CommandType.StoredProcedure);
-
-                if (xml is null)
+                if (XML is null)
                     return NotFound("No se encotraron categorias");
 
-                return Content(xml, "application/xml");
+                return Content(XML, "application/xml");
 
             }
             catch (Exception ex)
@@ -54,167 +50,167 @@ namespace webserviceApi.Controllers
 
         }
 
-        [HttpGet("{Id:int}", Name = "ObtenerArticulo")]
-        public async Task<IActionResult> GetById(int Id)
-        {
-            var connection = _configuration.GetConnectionString("ConnectionString");
+        //[HttpGet("{Id:int}", Name = "ObtenerArticulo")]
+        //public async Task<IActionResult> GetById(int Id)
+        //{
+        //    var connection = _configuration.GetConnectionString("ConnectionString");
 
-            var con = new SqlConnection(connection);
-
-
-            //convertimos a XML el objeto recibido para poder pasarlo al procedimiento almacenado
-
-            var xmlString = $@"<Articulos>
-                <Articulo>
-                <Id>{Id}</Id>
-                </Articulo>
-                </Articulos>";
-
-            try
-            {
-                await con.OpenAsync();
-
-                var xmlResult = await con.QueryFirstOrDefaultAsync<string>("[dbo].[sp_GetArituloById]",
-                    new { xmlArticulo = xmlString }, commandType: CommandType.StoredProcedure);
-
-                if (xmlResult is null)
-                    return NotFound("no se encotro articulo");
-
-                return Content(xmlResult, "application/xml");
+        //    var con = new SqlConnection(connection);
 
 
-            }
-            catch (Exception ex)
-            {
+        //    //convertimos a XML el objeto recibido para poder pasarlo al procedimiento almacenado
+
+        //    var xmlString = $@"<Articulos>
+        //        <Articulo>
+        //        <Id>{Id}</Id>
+        //        </Articulo>
+        //        </Articulos>";
+
+        //    try
+        //    {
+        //        await con.OpenAsync();
+
+        //        var xmlResult = await con.QueryFirstOrDefaultAsync<string>("[dbo].[sp_GetArituloById]",
+        //            new { xmlArticulo = xmlString }, commandType: CommandType.StoredProcedure);
+
+        //        if (xmlResult is null)
+        //            return NotFound("no se encotro articulo");
+
+        //        return Content(xmlResult, "application/xml");
 
 
-                return StatusCode(500, $"Error de parte del servidor {ex}");
-            }
-
-        }
-
-
-        [HttpPost]
-        [Consumes("application/xml")]
-        public async Task<IActionResult> Post([FromBody] XmlDocument xmlArticulo)
-        {
-
-            var connection = _configuration.GetConnectionString("ConnectionString");
-
-            var con = new SqlConnection(connection);
-            var xmlString = xmlArticulo.OuterXml;
-            try
-            {
-                await con.OpenAsync();
-
-                var xmlResult = await con.QueryFirstOrDefaultAsync<int>("[dbo].sp_postArticulo",
-                       new { xmlArticulo = xmlString }, commandType: CommandType.StoredProcedure);
-
-                if (xmlResult == 0)
-                {
-                    return NotFound("NO SE INGRESO ARTICULO");
-                }
-
-                return CreatedAtRoute("ObtenerArticulo", new { Id = xmlResult }, xmlResult);
-
-            }
-            catch (SqlException ex)
-            {
-
-                return StatusCode(500, $"Error de parte del server: {ex}");
-            }
+        //    }
+        //    catch (Exception ex)
+        //    {
 
 
-        }
+        //        return StatusCode(500, $"Error de parte del servidor {ex}");
+        //    }
 
-        [HttpDelete("{Id:int}")]
-        public async Task<IActionResult> Delete(int Id)
-        {
-            var connection = _configuration.GetConnectionString("ConnectionString");
-
-            var con = new SqlConnection(connection);
-
-            var xmlString = $@"<Articulos>
-                <Articulo>
-                <Id>{Id}</Id>
-                </Articulo>
-                </Articulos>";
-
-            try
-            {
-                await con.OpenAsync();
-
-                var xmlResult = await con.QueryFirstOrDefaultAsync<string>("[dbo].spu_DeleteArticulo",
-                    new { xmlArticulo = xmlString }, commandType: CommandType.StoredProcedure);
-
-                if (string.IsNullOrEmpty(xmlResult))
-                    return NotFound("No se pudo encotrar la categoria");
-
-                return Content(xmlResult, "application/xml");
-
-            }
-            catch (SqlException ex)
-            {
-
-                return StatusCode(500, $"Error departe del server: {ex}");
-            }
-
-        }
-
-        [HttpPost("foto")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> PostFoto([FromForm] ArticuloFotoDTO model)
-        {
+        //}
 
 
-            var connection = _configuration.GetConnectionString("ConnectionString");
+        //[HttpPost]
+        //[Consumes("application/xml")]
+        //public async Task<IActionResult> Post([FromBody] XmlDocument xmlArticulo)
+        //{
 
-            using var con = new SqlConnection(connection);
+        //    var connection = _configuration.GetConnectionString("ConnectionString");
 
-            string? UrlFoto = null;
+        //    var con = new SqlConnection(connection);
+        //    var xmlString = xmlArticulo.OuterXml;
+        //    try
+        //    {
+        //        await con.OpenAsync();
 
-            if (model.Foto != null )
-            {
+        //        var xmlResult = await con.QueryFirstOrDefaultAsync<int>("[dbo].sp_postArticulo",
+        //               new { xmlArticulo = xmlString }, commandType: CommandType.StoredProcedure);
 
-                UrlFoto = await almacenadorDeArchivos.Almacenar("articulos", model.Foto);
-            }
+        //        if (xmlResult == 0)
+        //        {
+        //            return NotFound("NO SE INGRESO ARTICULO");
+        //        }
 
-            var xmlString = $@"
-             <Articulos>
-             <Articulo>
-             <Nombre>{model.Nombre}</Nombre>
-             <Descripcion>{model.Descripcion} </Descripcion>
-             <Precio>{model.Precio}</Precio>
-             <CategoriaId>{model.CategoriaId}</CategoriaId>
-             <Sotck>{model.Sotck}</Sotck>
-             <ColoresDisponibles>{model.ColoresDisponibles}</ColoresDisponibles>
-             <TallasDisponibles>{model.TallasDisponibles}</TallasDisponibles>
-             <Foto>{UrlFoto}</Foto>
-             </Articulo>
-             </Articulos>
-              ";
+        //        return CreatedAtRoute("ObtenerArticulo", new { Id = xmlResult }, xmlResult);
 
-            try
-            {
+        //    }
+        //    catch (SqlException ex)
+        //    {
 
-                await con.OpenAsync();
-
-                var xmlResult = await con.QueryFirstOrDefaultAsync<int>("[dbo].sp_postFotoArticulo",
-                                         new { xmlArticulo = xmlString }, commandType: CommandType.StoredProcedure);
+        //        return StatusCode(500, $"Error de parte del server: {ex}");
+        //    }
 
 
-                if (xmlResult == 0)
-                    return NotFound("No se ingreso el articulo");
+        //}
 
-                return CreatedAtRoute("ObtenerArticulo", new { id = xmlResult }, xmlResult);
+        //[HttpDelete("{Id:int}")]
+        //public async Task<IActionResult> Delete(int Id)
+        //{
+        //    var connection = _configuration.GetConnectionString("ConnectionString");
 
-            }
-            catch (SqlException ex)
-            {
+        //    var con = new SqlConnection(connection);
 
-                return StatusCode(500, $"Error Conectar con el servidor:{ex}");
-            }
+        //    var xmlString = $@"<Articulos>
+        //        <Articulo>
+        //        <Id>{Id}</Id>
+        //        </Articulo>
+        //        </Articulos>";
 
-        }
+        //    try
+        //    {
+        //        await con.OpenAsync();
+
+        //        var xmlResult = await con.QueryFirstOrDefaultAsync<string>("[dbo].spu_DeleteArticulo",
+        //            new { xmlArticulo = xmlString }, commandType: CommandType.StoredProcedure);
+
+        //        if (string.IsNullOrEmpty(xmlResult))
+        //            return NotFound("No se pudo encotrar la categoria");
+
+        //        return Content(xmlResult, "application/xml");
+
+        //    }
+        //    catch (SqlException ex)
+        //    {
+
+        //        return StatusCode(500, $"Error departe del server: {ex}");
+        //    }
+
+        //}
+
+        //[HttpPost("foto")]
+        //[Consumes("multipart/form-data")]
+        //public async Task<IActionResult> PostFoto([FromForm] ArticuloFotoDTO model)
+        //{
+
+
+        //    var connection = _configuration.GetConnectionString("ConnectionString");
+
+        //    using var con = new SqlConnection(connection);
+
+        //    string? UrlFoto = null;
+
+        //    if (model.Foto != null )
+        //    {
+
+        //        UrlFoto = await almacenadorDeArchivos.Almacenar("articulos", model.Foto);
+        //    }
+
+        //    var xmlString = $@"
+        //     <Articulos>
+        //     <Articulo>
+        //     <Nombre>{model.Nombre}</Nombre>
+        //     <Descripcion>{model.Descripcion} </Descripcion>
+        //     <Precio>{model.Precio}</Precio>
+        //     <CategoriaId>{model.CategoriaId}</CategoriaId>
+        //     <Sotck>{model.Sotck}</Sotck>
+        //     <ColoresDisponibles>{model.ColoresDisponibles}</ColoresDisponibles>
+        //     <TallasDisponibles>{model.TallasDisponibles}</TallasDisponibles>
+        //     <Foto>{UrlFoto}</Foto>
+        //     </Articulo>
+        //     </Articulos>
+        //      ";
+
+        //    try
+        //    {
+
+        //        await con.OpenAsync();
+
+        //        var xmlResult = await con.QueryFirstOrDefaultAsync<int>("[dbo].sp_postFotoArticulo",
+        //                                 new { xmlArticulo = xmlString }, commandType: CommandType.StoredProcedure);
+
+
+        //        if (xmlResult == 0)
+        //            return NotFound("No se ingreso el articulo");
+
+        //        return CreatedAtRoute("ObtenerArticulo", new { id = xmlResult }, xmlResult);
+
+        //    }
+        //    catch (SqlException ex)
+        //    {
+
+        //        return StatusCode(500, $"Error Conectar con el servidor:{ex}");
+        //    }
+
+        //}
     }
 }

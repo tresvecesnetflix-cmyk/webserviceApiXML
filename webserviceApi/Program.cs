@@ -7,6 +7,8 @@ using webserviceApi.Datos;
 using webserviceApi.Swagger;
 using Microsoft.OpenApi.Models;
 using webserviceApi.Servicios.Externos;
+using webserviceApi.Servicios;
+using webserviceApi.Repositorios;
 
 var builder = WebApplication.CreateBuilder(args);
 //configurar para formato XML
@@ -79,7 +81,8 @@ builder.Services.AddIdentityCore<IdentityUser>().AddEntityFrameworkStores<Applic
 builder.Services.AddScoped<UserManager<IdentityUser>>();
 builder.Services.AddScoped<SignInManager<IdentityUser>>();
 
-
+builder.Services.AddScoped<IArticuloRespositorio, ArticuloRepositorio>();
+builder.Services.AddScoped<IArticuloServicio, ArticuloServicios>();
 
 
 var app = builder.Build();
