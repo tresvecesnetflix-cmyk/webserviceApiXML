@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.Xml;
 using webserviceApi.DTOs;
-using webserviceApi.Servicios;
+using webserviceApi.Servicios.Externos;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace webserviceApi.Controllers

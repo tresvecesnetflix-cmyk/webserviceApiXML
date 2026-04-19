@@ -3,11 +3,10 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using webserviceApi.DTOs;
-using webserviceApi.Servicios;
 using System.Net.Http.Headers;
 using webserviceApi.Models.Wompi;
 
-namespace webserviceApi.Servicios
+namespace webserviceApi.Servicios.Externos
 {
     public class WompiService
     {

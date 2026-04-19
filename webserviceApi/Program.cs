@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using webserviceApi.Datos;
-using webserviceApi.Servicios;
 using webserviceApi.Swagger;
 using Microsoft.OpenApi.Models;
+using webserviceApi.Servicios.Externos;
 
 var builder = WebApplication.CreateBuilder(args);
 //configurar para formato XML

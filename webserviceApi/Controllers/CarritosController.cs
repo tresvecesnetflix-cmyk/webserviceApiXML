@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Xml;
-using webserviceApi.Servicios;
 using System.Data;
+using webserviceApi.Servicios.Externos;
 
 namespace webserviceApi.Controllers
 {

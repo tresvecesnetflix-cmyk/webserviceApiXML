@@ -1,5 +1,4 @@
-﻿
-namespace webserviceApi.Servicios
+﻿namespace webserviceApi.Servicios.Externos
 {
     public class AlmacenadorDeArchivoLocal : IAlmacenadorDeArchivos
     {

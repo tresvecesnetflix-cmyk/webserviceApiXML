@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace webserviceApi.Servicios
+namespace webserviceApi.Servicios.Externos
 {
     public class ServicioUsuarios : IServicioUsuarios
     {
