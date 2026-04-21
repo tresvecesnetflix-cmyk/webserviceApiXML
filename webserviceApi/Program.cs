@@ -83,7 +83,7 @@ builder.Services.AddScoped<SignInManager<IdentityUser>>();
 
 builder.Services.AddScoped<IArticuloRespositorio, ArticuloRepositorio>();
 builder.Services.AddScoped<IArticuloServicio, ArticuloServicios>();
-
+builder.Services.AddScoped<ICategoriaRepositorio, CategoriaRepositorio>();
 
 var app = builder.Build();
 app.UseSwagger();

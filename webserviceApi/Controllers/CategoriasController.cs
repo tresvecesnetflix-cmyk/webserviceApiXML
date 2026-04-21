@@ -6,51 +6,52 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Runtime.CompilerServices;
 using webserviceApi.Servicios;
+using webserviceApi.Servicios.Externos;
+using webserviceApi.Repositorios;
 
 namespace webserviceApi.Controllers
 {
     [ApiController]
     [Route("api/Cat")]
-    public class CategoriasController: ControllerBase
+    public class CategoriasController : ControllerBase
     { 
-    //{
-    //    private readonly IConfiguration _configuration;
-    //    private readonly IAlmacenadorDeArchivos _almacenadorDeArchivos;
+    
+        private readonly ICategoriaRepositorio categoriaServicio;
+        private readonly IAlmacenadorDeArchivos _almacenadorDeArchivos;
 
-    //    public CategoriasController(IConfiguration configuration, IAlmacenadorDeArchivos almacenadorDeArchivos)
-    //    {
-    //        _configuration = configuration;
-    //        _almacenadorDeArchivos = almacenadorDeArchivos;
-    //    }
+        public CategoriasController(ICategoriaRepositorio categoriaServicio, IAlmacenadorDeArchivos almacenadorDeArchivos)
+        {
+            this.categoriaServicio = categoriaServicio;
+            _almacenadorDeArchivos = almacenadorDeArchivos;
+        }
 
-    //    [HttpGet("listado")]
-    //    public async Task<IActionResult> Getxml()
-    //    {
-    //        string connection = _configuration.GetConnectionString("ConnectionString");
+        [HttpGet]
+        public async Task<ActionResult> GetAll()
+        {
 
-    //        using var conn = new SqlConnection(connection);
+            try
+            {
+                var xml = await categoriaServicio.ListaCategoria();
 
-    //        try
-    //        {
-    //            await conn.OpenAsync();
 
-    //            var xml = await conn.QueryFirstOrDefaultAsync<string>(
-    //                "[dbo].[SPU_GetAllCategoria]", commandType:CommandType.StoredProcedure);
+                if (!string.IsNullOrEmpty(xml)) 
+                {
+                    return Content(xml);
 
-    //            if (string.IsNullOrEmpty(xml))
-    //                return NotFound("No se agregaron categorias");
+                }
 
-    //            return Content(xml,"application/xml");
-    //        }
-    //        catch(Exception ex)
-    //        {
+                return NotFound();
+            }
+            catch (SqlException ex)
+            {
 
-    //            return StatusCode(500, $"Error al obener XML: {ex.Message}");
-    //        }
-    //    }
+                return StatusCode(500, $"Error departe del servidor: {ex}");
+            }
+          
+        }
 
-    //    [HttpGet("{Id:int}",Name ="ObtenerCategoria")]
-    //    public async Task<IActionResult>ById(int Id)
+    //    [HttpGet("{Id:int}", Name = "ObtenerCategoria")]
+    //    public async Task<IActionResult> ById(int Id)
     //    {
 
     //        var connection = _configuration.GetConnectionString("ConnectionString");
@@ -59,25 +60,25 @@ namespace webserviceApi.Controllers
 
     //        try
     //        {
-    //           await con.OpenAsync();
+    //            await con.OpenAsync();
     //            var xml = await con.QueryFirstOrDefaultAsync<string>(
     //                "[dbo].[sp_GetCategoriaByid]",
-    //                new {Id}, 
-    //                commandType:CommandType.StoredProcedure);
+    //                new { Id },
+    //                commandType: CommandType.StoredProcedure);
 
     //            if (string.IsNullOrEmpty(xml))
     //                return NotFound("no se an agregado articulos");
 
-    //            return Content(xml,"application/xml");
+    //            return Content(xml, "application/xml");
     //        }
-    //        catch(Exception e)
+    //        catch (Exception e)
     //        {
-    //            return StatusCode(500,$"Error:{e.Message}");
+    //            return StatusCode(500, $"Error:{e.Message}");
     //        }
     //    }
 
     //    [HttpPost]
-    //    public async Task<IActionResult>Pots([FromBody] string xmlCategoria)
+    //    public async Task<IActionResult> Pots([FromBody] string xmlCategoria)
     //    {
     //        var connection = _configuration.GetConnectionString("ConnectionString");
 
@@ -87,12 +88,12 @@ namespace webserviceApi.Controllers
     //        {
     //            await con.OpenAsync();
     //            var nuevoId = await con.QueryFirstOrDefaultAsync<int>("[dbo].[sp_InsertarCategoria]",
-    //                new {xmlCategoria=xmlCategoria}, commandType:CommandType.StoredProcedure);
+    //                new { xmlCategoria = xmlCategoria }, commandType: CommandType.StoredProcedure);
 
     //            if (nuevoId == 0)
-    //            return BadRequest("No se pudo insertar categoria");
+    //                return BadRequest("No se pudo insertar categoria");
 
-    //            return CreatedAtRoute("ObtenerCategoria",new {id=nuevoId},nuevoId);
+    //            return CreatedAtRoute("ObtenerCategoria", new { id = nuevoId }, nuevoId);
 
     //        }
     //        catch (SqlException ex)
@@ -100,9 +101,10 @@ namespace webserviceApi.Controllers
 
     //            return StatusCode(500, $"Error al insertar:  {ex.Message}");
     //        }
-    //        catch (Exception ex) {
-            
-    //        return StatusCode(500,$"Error al insertar:  { ex.Message}");
+    //        catch (Exception ex)
+    //        {
+
+    //            return StatusCode(500, $"Error al insertar:  {ex.Message}");
     //        }
     //    }
     //    [HttpPut]
@@ -115,10 +117,11 @@ namespace webserviceApi.Controllers
 
     //        var connection = _configuration.GetConnectionString("ConnectionString");
 
-    //        try{
+    //        try
+    //        {
     //            var con = new SqlConnection(connection);
 
-    //            await  con.OpenAsync();
+    //            await con.OpenAsync();
 
 
     //            var xml = await con.QueryFirstOrDefaultAsync<int>("[dbo].[sp_updateCategoria]",
@@ -133,20 +136,20 @@ namespace webserviceApi.Controllers
     //        }
     //        catch (SqlException ex)
     //        {
-    //            return StatusCode(500,$"Error a insertar: {ex}");
+    //            return StatusCode(500, $"Error a insertar: {ex}");
 
     //        }
     //        catch (Exception ex)
     //        {
     //            return StatusCode(500, $"Error al insertar: {ex}");
-                
+
     //        }
     //    }
 
     //    [HttpDelete("{Id:int}")]
     //    public async Task<IActionResult> Delete(int Id)
     //    {
-    //        var xmlString= $@"<Categorias>
+    //        var xmlString = $@"<Categorias>
     //                <Categoria>
     //               <Id>{Id}</Id>
     //              </Categoria>
@@ -162,15 +165,16 @@ namespace webserviceApi.Controllers
     //            await con.OpenAsync();
 
     //            var xml = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_DeleteCategoria]",
-    //                new {xmlCategoria=xmlString}, commandType:CommandType.StoredProcedure);
+    //                new { xmlCategoria = xmlString }, commandType: CommandType.StoredProcedure);
 
     //            if (string.IsNullOrEmpty(xml))
     //                return NotFound("categoria no encontrada");
 
-    //            return Content(xml,"application/xml");
+    //            return Content(xml, "application/xml");
 
 
-    //        }catch(SqlException ex)
+    //        }
+    //        catch (SqlException ex)
     //        {
 
     //            return StatusCode(500, $"error al procesar la solicitud: {ex}");
@@ -190,14 +194,14 @@ namespace webserviceApi.Controllers
     //    {
     //        string? urlFoto = null;
 
-    //        if(Foto!= null)
+    //        if (Foto != null)
     //        {
-    //            urlFoto = await _almacenadorDeArchivos.Almacenar("categorias",Foto);
+    //            urlFoto = await _almacenadorDeArchivos.Almacenar("categorias", Foto);
 
     //        }
 
 
-    //        var xml= $@"<Categoria>
+    //        var xml = $@"<Categoria>
     //<Titulo>{Titulo}</Titulo>
     //<Descripcion>{Descripcion}</Descripcion>
     //<Foto>{urlFoto}</Foto>
@@ -210,17 +214,17 @@ namespace webserviceApi.Controllers
 
     //        try
     //        {
-    //          await con.OpenAsync();
+    //            await con.OpenAsync();
 
     //            var xmlFoto = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_PotsCategoriaFoto]",
-    //                new {xmlCategoria=xml}, commandType:CommandType.StoredProcedure);
+    //                new { xmlCategoria = xml }, commandType: CommandType.StoredProcedure);
 
     //            if (string.IsNullOrEmpty(xmlFoto))
     //            {
     //                return NotFound("No existe categoria ");
 
-    //             }
-    //            return Content(xmlFoto,"application/xml");
+    //            }
+    //            return Content(xmlFoto, "application/xml");
     //        }
     //        catch (SqlException ex)
     //        {
@@ -231,6 +235,6 @@ namespace webserviceApi.Controllers
     //            return BadRequest($"<Error>{ex.Message}</Error>");
     //        }
     //    }
-        
+
     }
 }
