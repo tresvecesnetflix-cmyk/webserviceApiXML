@@ -8,6 +8,8 @@ using System.Runtime.CompilerServices;
 using webserviceApi.Servicios;
 using webserviceApi.Servicios.Externos;
 using webserviceApi.Repositorios;
+using Microsoft.EntityFrameworkCore.Query.Internal;
+using webserviceApi.DTOs;
 
 namespace webserviceApi.Controllers
 {
@@ -50,191 +52,153 @@ namespace webserviceApi.Controllers
           
         }
 
-    //    [HttpGet("{Id:int}", Name = "ObtenerCategoria")]
-    //    public async Task<IActionResult> ById(int Id)
-    //    {
+        [HttpGet("{Id:int}", Name = "ObtenerCategoria")]
+        public async Task<IActionResult> ById(int Id)
+        {
 
-    //        var connection = _configuration.GetConnectionString("ConnectionString");
+    
+            var xml =await categoriaServicio.GetById(Id);
 
-    //        using var con = new SqlConnection(connection);
+            try
+            {
+                if (xml is null)
+                    return NotFound("no se encotro articulo");
 
-    //        try
-    //        {
-    //            await con.OpenAsync();
-    //            var xml = await con.QueryFirstOrDefaultAsync<string>(
-    //                "[dbo].[sp_GetCategoriaByid]",
-    //                new { Id },
-    //                commandType: CommandType.StoredProcedure);
+                return Content(xml, "application/xml");
 
-    //            if (string.IsNullOrEmpty(xml))
-    //                return NotFound("no se an agregado articulos");
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, $"Error:{e.Message}");
+            }
+        }
 
-    //            return Content(xml, "application/xml");
-    //        }
-    //        catch (Exception e)
-    //        {
-    //            return StatusCode(500, $"Error:{e.Message}");
-    //        }
-    //    }
+        [HttpPost]
+        [Consumes("application/xml")]
+        public async Task<ActionResult> Pots([FromBody] XmlDocument xmlCategoria)
+        {
+            try
+            {
+                var xmlString = xmlCategoria.OuterXml;
 
-    //    [HttpPost]
-    //    public async Task<IActionResult> Pots([FromBody] string xmlCategoria)
-    //    {
-    //        var connection = _configuration.GetConnectionString("ConnectionString");
+                var xmlResult = await categoriaServicio.Post(xmlString);
+                if (xmlResult == 0) 
+                {
+                    return NotFound();
+                }
+                return CreatedAtRoute("ObtenerCategoria", new {Id= xmlResult }, xmlResult);
+            }
+            catch (SqlException ex)
+            {
 
-    //        var con = new SqlConnection(connection);
+                return StatusCode(500, $"Error al insertar:  {ex.Message}");
+            }
+   
+        }
+        [HttpPut]
+        [Consumes("application/xml")]
 
-    //        try
-    //        {
-    //            await con.OpenAsync();
-    //            var nuevoId = await con.QueryFirstOrDefaultAsync<int>("[dbo].[sp_InsertarCategoria]",
-    //                new { xmlCategoria = xmlCategoria }, commandType: CommandType.StoredProcedure);
+        public async Task<ActionResult> put([FromBody] XmlDocument xmlCategoria)
+        {
 
-    //            if (nuevoId == 0)
-    //                return BadRequest("No se pudo insertar categoria");
-
-    //            return CreatedAtRoute("ObtenerCategoria", new { id = nuevoId }, nuevoId);
-
-    //        }
-    //        catch (SqlException ex)
-    //        {
-
-    //            return StatusCode(500, $"Error al insertar:  {ex.Message}");
-    //        }
-    //        catch (Exception ex)
-    //        {
-
-    //            return StatusCode(500, $"Error al insertar:  {ex.Message}");
-    //        }
-    //    }
-    //    [HttpPut]
-    //    [Consumes("application/xml")]
-
-    //    public async Task<IActionResult> put([FromBody] XmlDocument xmlCategoria)
-    //    {
-
-    //        var xmlString = xmlCategoria.OuterXml;
-
-    //        var connection = _configuration.GetConnectionString("ConnectionString");
-
-    //        try
-    //        {
-    //            var con = new SqlConnection(connection);
-
-    //            await con.OpenAsync();
+    
+            try
+            {
+                var stringXML = xmlCategoria.OuterXml;
 
 
-    //            var xml = await con.QueryFirstOrDefaultAsync<int>("[dbo].[sp_updateCategoria]",
-    //               new { xmlCategoria = xmlString }, commandType: CommandType.StoredProcedure);
 
-    //            if (xml == 0)
-    //                return NotFound("categoria no encontrada");
+                var xml = await categoriaServicio.Put(stringXML);
 
-    //            return NoContent();
+                if (xml == 0)
+                    return NotFound("categoria no encontrada");
 
-
-    //        }
-    //        catch (SqlException ex)
-    //        {
-    //            return StatusCode(500, $"Error a insertar: {ex}");
-
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            return StatusCode(500, $"Error al insertar: {ex}");
-
-    //        }
-    //    }
-
-    //    [HttpDelete("{Id:int}")]
-    //    public async Task<IActionResult> Delete(int Id)
-    //    {
-    //        var xmlString = $@"<Categorias>
-    //                <Categoria>
-    //               <Id>{Id}</Id>
-    //              </Categoria>
-    //               </Categorias>";
+                return NoContent();
 
 
-    //        var connection = _configuration.GetConnectionString("ConnectionString");
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(500, $"Error a insertar: {ex}");
 
-    //        try
-    //        {
-    //            var con = new SqlConnection(connection);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al insertar: {ex}");
 
-    //            await con.OpenAsync();
+            }
+        }
 
-    //            var xml = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_DeleteCategoria]",
-    //                new { xmlCategoria = xmlString }, commandType: CommandType.StoredProcedure);
+        [HttpDelete("{Id:int}")]
+        public async Task<ActionResult> Delete(int Id)
+        {
 
-    //            if (string.IsNullOrEmpty(xml))
-    //                return NotFound("categoria no encontrada");
+            try
+            {
+                var xml = await categoriaServicio.delete(Id);
+                if(!string.IsNullOrEmpty(xml))
+                return NoContent();
 
-    //            return Content(xml, "application/xml");
+                return NotFound();
+            }
+            catch (SqlException ex)
+            {
 
+                return StatusCode(500, $"error al procesar la solicitud: {ex}");
+            }
+            catch (Exception ex)
+            {
 
-    //        }
-    //        catch (SqlException ex)
-    //        {
+                return StatusCode(500, $"error al procesar la solicitud: {ex}");
+            }
 
-    //            return StatusCode(500, $"error al procesar la solicitud: {ex}");
-    //        }
-    //        catch (Exception ex)
-    //        {
-
-    //            return StatusCode(500, $"error al procesar la solicitud: {ex}");
-    //        }
-
-    //    }
-
-
-    //    [HttpPost("potsFoto")]
-    //    [Consumes("multipart/form-data")]
-    //    public async Task<IActionResult> PotsFoto([FromForm] string Titulo, [FromForm] string Descripcion, [FromForm] IFormFile Foto)
-    //    {
-    //        string? urlFoto = null;
-
-    //        if (Foto != null)
-    //        {
-    //            urlFoto = await _almacenadorDeArchivos.Almacenar("categorias", Foto);
-
-    //        }
+        }
 
 
-    //        var xml = $@"<Categoria>
-    //<Titulo>{Titulo}</Titulo>
-    //<Descripcion>{Descripcion}</Descripcion>
-    //<Foto>{urlFoto}</Foto>
-    // </Categoria>";
+        [HttpPost("potsFoto")]
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult> PostFoto([FromForm]CategoriaFotoDTO model)
+        {
+            string? urlFoto = null;
+
+            if (model.Foto != null)
+            {
+                urlFoto = await _almacenadorDeArchivos.Almacenar("categorias", model.Foto);
+
+            }
 
 
-    //        var connection = _configuration.GetConnectionString("ConnectionString");
+            var xmlString = $@"<Categoria>
+        <Titulo>{model.Titulo}</Titulo>
+        <Descripcion>{model.Descripcion}</Descripcion>
+        <Foto>{urlFoto}</Foto>
+         </Categoria>";
 
-    //        var con = new SqlConnection(connection);
 
-    //        try
-    //        {
-    //            await con.OpenAsync();
 
-    //            var xmlFoto = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_PotsCategoriaFoto]",
-    //                new { xmlCategoria = xml }, commandType: CommandType.StoredProcedure);
 
-    //            if (string.IsNullOrEmpty(xmlFoto))
-    //            {
-    //                return NotFound("No existe categoria ");
+            try
+            {
 
-    //            }
-    //            return Content(xmlFoto, "application/xml");
-    //        }
-    //        catch (SqlException ex)
-    //        {
-    //            return BadRequest($"<Error>{ex.Message}</Error>");
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            return BadRequest($"<Error>{ex.Message}</Error>");
-    //        }
-    //    }
+                var xmlFoto = await categoriaServicio.PostFoto(xmlString);
+
+                if (!string.IsNullOrEmpty(xmlFoto))
+                {
+                    return Content(xmlFoto, "application/xml");
+
+                }
+                return NotFound("No existe categoria ");
+
+            }
+            catch (SqlException ex)
+            {
+                return BadRequest($"<Error>{ex.Message}</Error>");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"<Error>{ex.Message}</Error>");
+            }
+        }
 
     }
 }

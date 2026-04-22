@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using webserviceApi.DTOs;
 
 namespace webserviceApi.Repositorios
 {
@@ -33,5 +34,76 @@ namespace webserviceApi.Repositorios
             }
 
         }
+
+        public async Task<string> GetById(int Id)
+        {
+            using var con = new SqlConnection(_con);
+
+           await con.OpenAsync();
+
+            var xmlString = $@"<Categorias>
+                <Categoria>
+                <Id>{Id}</Id>
+                </Categoria>
+                </Categorias>";
+
+    
+                var xmlRespuesta = await con.QueryFirstOrDefaultAsync<string>("[dbo].[sp_GetCategoriaByid]", new { xmlCategoria = xmlString }, commandType: CommandType.StoredProcedure);
+                return xmlRespuesta ?? string.Empty;
+    
+        }
+
+        public async Task<int> Post(string xmlCategoria)
+        {
+
+            using var con = new SqlConnection(_con);
+
+             await con.OpenAsync();
+
+            var xmlRespuesta = await con.QueryFirstOrDefaultAsync<int>("sp_InsertarCategoria",new {xmlCategoria},commandType:CommandType.StoredProcedure);
+            return xmlRespuesta;
+        
+        }
+
+        public async Task<int> Put(string xmlCategoria)
+        {
+            using var con = new SqlConnection(_con);
+
+            await con.OpenAsync();
+
+                var xmlRespuesta = await con.QueryFirstOrDefaultAsync<int>("sp_updateCategoria", new { xmlCategoria }, commandType: CommandType.StoredProcedure);
+                return xmlRespuesta;
+          
+        }
+
+        public async Task<string> delete(int Id)
+        {
+            using var con=  new SqlConnection(_con);
+          var xmlString=$@"
+                <Categoria>
+                <Id>{Id}</Id>
+                </Categoria>
+               ";
+
+            await con.OpenAsync();
+
+            var xmlResult = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_DeleteCategoria]", new { xmlCategoria = xmlString }, commandType: CommandType.StoredProcedure);
+
+            return xmlResult ?? string.Empty;
+
+        }
+
+        public async Task<string> PostFoto(string xmlCategoria)
+        {
+            using var con = new SqlConnection(_con);
+
+           await con.OpenAsync();
+
+            var xmlResult = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_PotsCategoriaFoto]", new { xmlCategoria = xmlCategoria }, commandType: CommandType.StoredProcedure);
+
+            return xmlResult ?? string.Empty;
+
+        }
+
     }
 }

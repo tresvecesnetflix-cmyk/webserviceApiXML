@@ -123,7 +123,7 @@ namespace webserviceApi.Controllers
 
         [HttpPost("foto")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> PostFoto([FromForm] ArticuloFotoDTO model)
+        public async Task<ActionResult> PostFoto([FromForm] ArticuloFotoDTO model)
         {
             string? UrlFoto = null;
 
