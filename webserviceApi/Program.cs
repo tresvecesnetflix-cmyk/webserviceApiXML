@@ -84,6 +84,9 @@ builder.Services.AddScoped<SignInManager<IdentityUser>>();
 builder.Services.AddScoped<IArticuloRespositorio, ArticuloRepositorio>();
 builder.Services.AddScoped<IArticuloServicio, ArticuloServicios>();
 builder.Services.AddScoped<ICategoriaRepositorio, CategoriaRepositorio>();
+builder.Services.AddScoped<ICarritoServicio, CarritoServicio>();
+builder.Services.AddScoped<ICarritoRepositorio, CarritoRepositorio>();
+builder.Services.AddScoped<ICarritoServicio,  CarritoServicio>();
 
 var app = builder.Build();
 app.UseSwagger();

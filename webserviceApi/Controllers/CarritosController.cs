@@ -5,6 +5,7 @@ using Microsoft.Data.SqlClient;
 using System.Xml;
 using System.Data;
 using webserviceApi.Servicios.Externos;
+using webserviceApi.Servicios;
 
 namespace webserviceApi.Controllers
 {
@@ -13,12 +14,12 @@ namespace webserviceApi.Controllers
     public class CarritosController: ControllerBase
     {
         private readonly IServicioUsuarios servicioUsuarios;
-        private readonly IConfiguration configuration;
+        private readonly ICarritoServicio carritoServicio;
 
-        public CarritosController(IServicioUsuarios servicioUsuarios, IConfiguration configuration)
+        public CarritosController(IServicioUsuarios servicioUsuarios, ICarritoServicio carritoServicio)
         {
             this.servicioUsuarios = servicioUsuarios;
-            this.configuration = configuration;
+            this.carritoServicio = carritoServicio;
         }
 
         [HttpPost]
@@ -27,9 +28,6 @@ namespace webserviceApi.Controllers
         public async Task<ActionResult> Post([FromBody] XmlDocument Carrito)
         {
 
-            var connection = configuration.GetConnectionString("ConnectionString");
-
-            using var con = new SqlConnection(connection);
 
             var xmlString = Carrito.OuterXml;
 
@@ -43,10 +41,8 @@ namespace webserviceApi.Controllers
 
             try
             {
-                await con.OpenAsync();
 
-                var ResultadoXML = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_carritoByUser]",
-                                             new { Carrito = xmlString, UsuarioId = usuario.Id }, commandType: CommandType.StoredProcedure);
+                var ResultadoXML = await carritoServicio.Post(xmlString,usuario.Id);
 
                 if (string.IsNullOrEmpty(ResultadoXML))
                     return BadRequest();
@@ -66,16 +62,7 @@ namespace webserviceApi.Controllers
         [Authorize]
         public async Task<ActionResult> Get(int Id)
         {
-            var connection = configuration.GetConnectionString("ConnectionString");
-
-            var Carrito = $@"<CarritoItems>
-                            <CarritoItem>
-                            <Id>{Id}</Id>
-                             </CarritoItem>
-                            </CarritoItems>";
-
-            using var con = new SqlConnection(connection);
-
+           
             var usuario = await servicioUsuarios.ObtenerUsuario();
             if (usuario is null)
             {
@@ -85,10 +72,7 @@ namespace webserviceApi.Controllers
 
             try
             {
-                await con.OpenAsync();
-
-                var ResultadoXML = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_getCarritoByUser]",
-                                             new { Carrito = Carrito, UsuarioId = usuario.Id }, commandType: CommandType.StoredProcedure);
+                var ResultadoXML = await carritoServicio.GetById(Id,usuario.Id);
 
                 if (string.IsNullOrEmpty(ResultadoXML))
                     return BadRequest();
@@ -106,19 +90,12 @@ namespace webserviceApi.Controllers
 
         }
 
-        [HttpDelete("{Id}")]
+        [HttpDelete("{id:int}")]
         [Authorize]
-        public async Task<ActionResult> Delete(int Id)
+        public async Task<ActionResult> Delete(int id)
         {
-            var connection = configuration.GetConnectionString("ConnectionString");
+          
 
-            var Carrito = $@"<CarritoItems>
-                            <CarritoItem>
-                            <Id>{Id}</Id>
-                             <CarritoItemItem>
-                            </CarritoItems>";
-
-            using var con = new SqlConnection(connection);
 
             var usuario = await servicioUsuarios.ObtenerUsuario();
             if (usuario is null)
@@ -128,10 +105,8 @@ namespace webserviceApi.Controllers
 
             try
             {
-                await con.OpenAsync();
 
-                var respuestaXML = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_deleteCarritoByUser]",
-                                           new { Carrito = Carrito, UsuarioId = usuario.Id }, commandType: CommandType.StoredProcedure);
+                var respuestaXML = await carritoServicio.Delete(id,usuario.Id);
 
                 if (string.IsNullOrEmpty(respuestaXML))
                     return BadRequest();
@@ -146,14 +121,13 @@ namespace webserviceApi.Controllers
             }
 
         }
+
         [HttpPut]
         [Authorize]
         [Consumes("application/xml")]
-        public async Task<ActionResult> Put([FromBody] string Carrito)
+        public async Task<ActionResult> PutReducir([FromBody] XmlDocument Carrito)
         {
-            var connection = configuration.GetConnectionString("ConnectionString");
-
-            using var con = new SqlConnection(connection);
+            var xmlString = Carrito.OuterXml;
 
             var usuario = await servicioUsuarios.ObtenerUsuario();
             if (usuario is null)
@@ -161,10 +135,7 @@ namespace webserviceApi.Controllers
 
             try
             {
-                await con.OpenAsync();
-
-                var resultadoXML = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_UpdateCarritoByUser]",
-                                         new { Carrito = Carrito, UsuarioId = usuario.Id }, commandType: CommandType.StoredProcedure);
+               var resultadoXML= await carritoServicio.Put(xmlString, usuario.Id);
 
 
                 if (string.IsNullOrEmpty(resultadoXML))
