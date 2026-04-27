@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
+using System.Net;
 using System.Runtime.Serialization.DataContracts;
 using System.Xml;
 using webserviceApi.Servicios;
+using webserviceApi.Servicios.Externos;
 
 namespace webserviceApi.Controllers
 {
@@ -15,209 +17,194 @@ namespace webserviceApi.Controllers
     public class DireccionesController : ControllerBase
     {
 
-        //private readonly IConfiguration _configuration;
-        //private readonly IServicioUsuarios _servicioUsuarios;
-        //private readonly string _ConnectionString;
+        private readonly IDireccionesServicio direccionesServicio;
+        private readonly IServicioUsuarios _servicioUsuarios;
 
-        //public DireccionesController(IConfiguration configuration, IServicioUsuarios servicioUsuarios)
-        //{
-        //    _configuration = configuration;
-        //    _servicioUsuarios = servicioUsuarios;
-        //    _ConnectionString = _configuration.GetConnectionString("ConnectionString") ?? throw new InvalidOperationException("No se encontro 'Connection String' en configuracion");
-  
-        //}
+        public DireccionesController(IDireccionesServicio direccionesServicio , IServicioUsuarios servicioUsuarios)
+        {
+            this.direccionesServicio = direccionesServicio;
+            _servicioUsuarios = servicioUsuarios;
 
-        //[HttpGet]
+        }
 
-        //public async Task<IActionResult> GetAll()
-        //{
-        //    var connection = _configuration.GetConnectionString("ConnectionString");
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetAll()
+        {
+          
+            try
+            {
 
-        //    using var con = new SqlConnection(connection);
+                var xmlResult = await direccionesServicio.GetAll();
 
-        //    try {
+                if (string.IsNullOrEmpty(xmlResult))
+                    return NotFound("No se encontrar elementos");
 
-        //        await con.OpenAsync();
+                return Content(xmlResult, "application/xml");
+            }
+            catch (SqlException ex)
+            {
 
-        //        var xmlResult = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_GetAllDirecciones]",
-        //            commandType: CommandType.StoredProcedure);
+                return StatusCode(500, $"error con el servidor {ex}");
+            }
 
-        //        if (string.IsNullOrEmpty(xmlResult))
-        //            return NotFound("No se encontrar elementos");
+        }
 
-        //        return Content(xmlResult, "application/xml");
-        //    } catch (SqlException ex)
-        //    {
+        [Authorize]
+        [HttpGet("Id", Name = "ExtraerDireccion")]
+        [Consumes("application/xml")]
+        
+        public async Task<ActionResult> GetById(int Id)
+        {
+            var usuario = await _servicioUsuarios.ObtenerUsuario();
+            if(usuario == null)
+            {
 
-        //        return StatusCode(500, $"error con el servidor {ex}");
-        //    }
+               return Unauthorized();
+            }
 
-        //}
+            try
+            {
 
-        //[HttpGet("Id", Name = "ExtraerDireccion")]
-        //[Consumes("application/xml")]
-        //public async Task<IActionResult> GetById(XmlDocument xmlDirecciones)
-        //{
-        //    var connection = _configuration.GetConnectionString("ConnectionString");
+                var xmlResult = await direccionesServicio.GetById(Id,usuario.Id);
 
-        //    var xmlString = xmlDirecciones.OuterXml;
-        //    using var con = new SqlConnection(connection);
+                if (string.IsNullOrEmpty(xmlResult))
+                    return NotFound("No encontro resultado");
 
-        //    try
-        //    {
-        //        await con.OpenAsync();
+                return Content(xmlResult, "application/xml");
 
-        //        var xmlResult = await con.QuerySingleOrDefaultAsync<string>("[dbo].[spu_GetDireccionById]",
-        //             new { xmlDirecciones = xmlString }, commandType: CommandType.StoredProcedure);
+            }
+            catch (SqlException ex)
+            {
 
-        //        if (string.IsNullOrEmpty(xmlResult))
-        //            return NotFound("No encontro resultado");
+                return StatusCode(500, $"error con el server :{ex}");
+            }
 
-        //        return Content(xmlResult, "application/xml");
 
-        //    } catch (SqlException ex)
-        //    {
+        }
 
-        //        return StatusCode(500, $"error con el server :{ex}");
-        //    }
+        [HttpDelete]
+        [Authorize]
+        public async Task<IActionResult> Delete(int Id)
+        {
 
+            var usuario = await _servicioUsuarios.ObtenerUsuario();
+            if(usuario == null)
+            {
 
-        //}
+                return Unauthorized();  
+            }
+            try
+            {
 
-        //[HttpDelete]
-        //public async Task<IActionResult> Delete(XmlDocument xmlDirecciones)
-        //{
-        //    var connection = _configuration.GetConnectionString("ConnectionString");
+                var xmlResult = await direccionesServicio.Delete(Id, usuario.Id);
 
-        //    var xmlString = xmlDirecciones.OuterXml;
+                if (string.IsNullOrEmpty(xmlResult))
+                    return NotFound();
 
-        //    var con = new SqlConnection(connection);
+                return Content(xmlResult, "application/xml");
 
-        //    try
-        //    {
-        //        await con.OpenAsync();
+            }
+            catch (SqlException ex)
+            {
 
-        //        var xmlResult = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_DeleteDirecciones]",
-        //            new { xmlDirecciones = xmlString }, commandType: CommandType.StoredProcedure);
+                return StatusCode(500, $"Error del servidor,{ex}");
+            }
 
-        //        if (string.IsNullOrEmpty(xmlResult))
-        //            return NotFound("Erriririririrorororororor");
+        }
 
-        //        return Content(xmlResult, "application/xml");
+        [HttpPost("ByUser")]
+        [Consumes("application/xml")]
+        [Authorize]
+        public async Task<IActionResult> PostByUser(XmlDocument xmlDirecciones)
+        {
 
-        //    } catch (SqlException ex)
-        //    {
+            var xmlString = xmlDirecciones.OuterXml;
 
-        //        return StatusCode(500, $"Error del servidor,{ex}");
-        //    }
+            var usuario = await _servicioUsuarios.ObtenerUsuario();
+            if(usuario == null)
+            {
+                return Unauthorized();
+            }
+            try
+            {
+                var xmlResult = await direccionesServicio.PostById(xmlString,usuario.Id);
 
-        //}
+                if (xmlResult == 0)
+                    return NotFound();
 
-        //[HttpPost]
-        //public async Task<IActionResult> Pots(XmlDocument xmlDirecciones)
-        //{
-        //    var connection = _configuration.GetConnectionString("ConnectionString");
+                return CreatedAtRoute("ExtraerDireccion", new { id = xmlResult }, xmlResult);
 
-        //    var xmlString = xmlDirecciones.OuterXml;
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(500, $"Error por parte del servidor{ex}");
 
-        //    var con = new SqlConnection(connection);
+            }
 
-        //    try {
-        //        await con.OpenAsync();
+        }
 
-        //        var xmlResult = await con.QueryFirstOrDefaultAsync<int>("[dbo].[spu_postDirecciones]",
-        //               new { xmlDirecciones = xmlString }, commandType: CommandType.StoredProcedure);
+        [HttpPost]
+        [Consumes("application/xml")]
+        public async Task<ActionResult> Post([FromBody] XmlDocument xmlDirecciones)
+        {
 
-        //        if (xmlResult == 0)
-        //            return NotFound("ERORORORORORORORO");
+           
 
-        //        return CreatedAtRoute("ExtraerDireccion", new { id = xmlResult }, xmlResult);
+            var xmlString = xmlDirecciones.OuterXml;
 
-        //    } catch (SqlException ex)
-        //    {
-        //        return StatusCode(500, $"Error por parte del servidor{ex}");
 
-        //    }
+            try
+            {
 
-        //}
+                var xmlResult = await direccionesServicio.Post(xmlString);
+                if (xmlResult == 0)
+                    return NotFound();
 
-        //[HttpPost("usuarioId")]
-        //[Authorize]
-        //public async Task<IActionResult>PostUser([FromBody]XmlDocument xmlDirecciones)
-        //{
-        //    var connection = _configuration.GetConnectionString("ConnectionString");
+                return CreatedAtRoute("ExtraerDireccion", new { id = xmlResult }, xmlResult);
 
-        //    var con = new SqlConnection(connection);
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(500, $"Error de servidor{ex.Message}");
 
-        //    //obtenemos el usuario autenticado
+            }
+        }
 
-        //    var usuario = await _servicioUsuarios.ObtenerUsuario();
-        //    if(usuario is null)
-        //    {
+        [HttpPut]
+        [Consumes("application/xml")]
+        [Authorize]
+        public async Task<ActionResult> Put([FromBody] XmlDocument xmlDirecciones)
+        {
 
-        //        return Unauthorized("usuario no autenticado");
-        //    }
+            var xmlString = xmlDirecciones.OuterXml;
 
-        //    var xmlString = xmlDirecciones.OuterXml;
+            var usuario = await _servicioUsuarios.ObtenerUsuario();
 
-            
-        //    try
-        //    {
-        //        await con.OpenAsync();
+            if (usuario is null)
+            {
+                return Unauthorized("Usuario no encontrado");
 
-        //        var xmlResult = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_postDireccionesUser]",
-        //            new { xmlDirecciones = xmlString, UsuarioId = usuario.Id }, commandType: CommandType.StoredProcedure);
+            }
+            try
+            {
 
-        //        if (string.IsNullOrEmpty(xmlResult))
-        //            return BadRequest("No se pudo insertar la direccion");
+                var xmlResult = await direccionesServicio.Put(xmlString, usuario.Id);
+                if (string.IsNullOrEmpty(xmlResult))
+                    return BadRequest("No se pudo ingresa la direcciones al usuario correspondiente");
 
-        //        return Content(xmlResult, "application/xml");
 
-        //    }
-        //    catch(SqlException ex)
-        //    {
-        //        return StatusCode(500, $"Error de servidor{ex.Message}");
 
-        //    }
-        //}
 
-        //[HttpPut]
-        //[Authorize]
-        //public async Task<IActionResult>Put([FromBody]XmlDocument xmlDirecciones)
-        //{
-        //    using var con = new SqlConnection(_ConnectionString);
+                return Content(xmlResult, "application/xml");
+            }
+            catch (SqlException ex)
+            {
 
-        //    var xmlString = xmlDirecciones.OuterXml;
+                return StatusCode(500, $"Error Departe del servidor {ex}");
+            }
 
-        //    var usuario  = await _servicioUsuarios.ObtenerUsuario();
-        //    if (usuario is null)
-        //    {
-        //        return Unauthorized("Usuario no encontrado");
-
-        //    }
-        //    try
-        //    {
-        //        await con.OpenAsync();
-
-        //        var xmlResult = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_PutDireccionesByUser]",
-        //            new { xmlDirecciones = xmlString, UsuarioId = usuario.Id }, commandType: CommandType.StoredProcedure);
-
-                
-
-        //        if (string.IsNullOrEmpty(xmlResult))
-        //            return BadRequest("No se pudo ingresa la direcciones al usuario correspondiente");
-
-
-
-
-        //        return Content(xmlResult, "application/xml");
-        //    }catch(SqlException ex)
-        //    {
-
-        //        return StatusCode(500, $"Error Departe del servidor {ex}");
-        //    }
-
-        //}
+        }
 
     }
 }
