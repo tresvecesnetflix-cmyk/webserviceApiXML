@@ -1,0 +1,46 @@
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
+using System.Data;
+using System.Xml;
+using System.Xml.Linq;
+using webserviceApi.DTOs;
+using webserviceApi.Repositorios;
+
+namespace webserviceApi.Servicios
+{
+    public class PedidoServicio: IPedidoServicio
+    {
+        private readonly IPedidoRepositorio pedidoRepositorio;
+
+        public PedidoServicio(IPedidoRepositorio pedidoRepositorio)
+        {
+            this.pedidoRepositorio = pedidoRepositorio;
+        }
+
+
+        public async Task<string> Post(string xmlDocument, string usuarioId)
+        {
+
+            var respuesta = pedidoRepositorio.Post(xmlDocument, usuarioId);
+
+            return await respuesta;
+        }
+
+        public async Task<string> Get(int Id, string usuarioId, string UsuarioEmail)
+        {
+            var respuesta = pedidoRepositorio.Get(Id, usuarioId, UsuarioEmail);
+
+            return await respuesta;
+
+        }
+
+        public async Task<string> Delete(int Id, string usuarioId)
+        {
+            var respuesta = pedidoRepositorio.Delete(Id, usuarioId);
+
+            return await respuesta;
+
+        }
+
+    }
+}

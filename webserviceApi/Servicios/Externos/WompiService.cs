@@ -20,6 +20,7 @@ namespace webserviceApi.Servicios.Externos
             this.settings = settings.Value;
         }
 
+        
         public async Task<WompiBitcointResponse> TransacctionBTC(BitcointTDO btc)
         {
 

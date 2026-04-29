@@ -89,6 +89,8 @@ builder.Services.AddScoped<ICarritoRepositorio, CarritoRepositorio>();
 builder.Services.AddScoped<ICarritoServicio,  CarritoServicio>();
 builder.Services.AddScoped<IDireccionesRepositorio, DireccionesRepositorio>();
 builder.Services.AddScoped<IDireccionesServicio, DireccioneServicio>();
+builder.Services.AddScoped<IPedidoServicio, PedidoServicio>();
+builder.Services.AddScoped<IPedidoRepositorio, PedidoRepositorio>();
 
 var app = builder.Build();
 app.UseSwagger();
