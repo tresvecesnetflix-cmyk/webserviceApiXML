@@ -1,4 +1,5 @@
-﻿using webserviceApi.Repositorios;
+﻿using webserviceApi.DTOs;
+using webserviceApi.Repositorios;
 
 namespace webserviceApi.Servicios
 {
@@ -11,29 +12,29 @@ namespace webserviceApi.Servicios
             this.articuloRespositorio = articuloRespositorio;
         }
 
-        public async Task<string> ObtenerTodos()
+        public async Task<List<ArticuloResponse>> ObtenerTodos()
         {
             return await articuloRespositorio.GetAll();
         }
 
-        public async Task<string> ObtenerPorId(int Id)
+        public async Task<ArticuloResponse> GetById(int Id)
         {
             return await articuloRespositorio.GetById(Id);
         }
 
-         public async Task<int> Post(string xmlArticulo)
+         public async Task<int> Post(ArticuloRequest model)
         {
-            return await articuloRespositorio.Post(xmlArticulo);
+            return await articuloRespositorio.Post(model);
         }
 
         public async Task<string> Delete(int Id)
         {
-            return await articuloRespositorio.Delete(Id);
+            return await articuloRespositorio.Delete( Id);
         }
 
-        public async Task<int> PostFoto(string xmlArticulo)
+        public async Task<int> PostFoto(ArticuloFotoDTO model)
         {
-            return await articuloRespositorio.PostFoto(xmlArticulo);
+            return await articuloRespositorio.PostFoto( model);
         }   
     }
 }

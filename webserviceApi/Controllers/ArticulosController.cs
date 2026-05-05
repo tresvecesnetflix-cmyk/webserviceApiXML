@@ -26,7 +26,7 @@ namespace webserviceApi.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<List<ArticuloResponse>>> GetAll()
         {
            
             try
@@ -37,7 +37,7 @@ namespace webserviceApi.Controllers
                 if (XML is null)
                     return NotFound("No se encotraron categorias");
 
-                return Content(XML, "application/xml");
+                return Ok(XML);
 
             }
             catch (Exception ex)
@@ -50,16 +50,21 @@ namespace webserviceApi.Controllers
         }
 
         [HttpGet("{Id:int}", Name = "ObtenerArticulo")]
-        public async Task<IActionResult> GetById(int Id)
+        public async Task<ActionResult<ArticuloResponse>> GetById(int Id)
         {
+            var request = new ArticuloRequest
+            {
+                Id = Id
+            };
+
             try
             {
-                var xmlResult = await articuloServicio.ObtenerPorId(Id);
+                var xmlResult = await articuloServicio.GetById(request.Id);
 
                 if (xmlResult is null)
                     return NotFound("no se encotro articulo");
 
-                return Content(xmlResult, "application/xml");
+                return Ok(xmlResult);
 
 
             }
@@ -74,14 +79,15 @@ namespace webserviceApi.Controllers
 
 
         [HttpPost]
-        [Consumes("application/xml")]
-        public async Task<IActionResult> Post([FromBody] XmlDocument xmlArticulo)
+        [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
+
+        public async Task<ActionResult> Post([FromBody] ArticuloRequest model)
         {
+   
             try
             {
-                var xmlString = xmlArticulo.OuterXml;
 
-                var xmlResult = await articuloServicio.Post(xmlString);
+                var xmlResult = await articuloServicio.Post(model);
 
                 if (xmlResult == 0)
                 {
@@ -100,9 +106,9 @@ namespace webserviceApi.Controllers
 
 
         [HttpDelete("{Id:int}")]
-        public async Task<IActionResult> Delete(int Id)
+        public async Task<ActionResult> Delete(int Id)
         {
-
+       
             try
             {
                 var xmlResult = await articuloServicio.Delete(Id);
@@ -125,32 +131,11 @@ namespace webserviceApi.Controllers
         [Consumes("multipart/form-data")]
         public async Task<ActionResult> PostFoto([FromForm] ArticuloFotoDTO model)
         {
-            string? UrlFoto = null;
 
-            if (model.Foto != null)
-            {
-
-                UrlFoto = await almacenadorDeArchivos.Almacenar("articulos", model.Foto);
-            }
-
-            var xmlString = $@"
-             <Articulos>
-             <Articulo>
-             <Nombre>{model.Nombre}</Nombre>
-             <Descripcion>{model.Descripcion} </Descripcion>
-             <Precio>{model.Precio}</Precio>
-             <CategoriaId>{model.CategoriaId}</CategoriaId>
-             <Sotck>{model.Sotck}</Sotck>
-             <ColoresDisponibles>{model.ColoresDisponibles}</ColoresDisponibles>
-             <TallasDisponibles>{model.TallasDisponibles}</TallasDisponibles>
-             <Foto>{UrlFoto}</Foto>
-             </Articulo>
-             </Articulos>
-              ";
 
             try
             {
-                var xmlResult = await articuloServicio.PostFoto(xmlString);
+                var xmlResult = await articuloServicio.PostFoto(model);
 
 
                 if (xmlResult == 0)

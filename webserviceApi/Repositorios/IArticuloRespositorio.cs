@@ -1,14 +1,16 @@
-﻿namespace webserviceApi.Repositorios
+﻿using webserviceApi.DTOs;
+
+namespace webserviceApi.Repositorios
 {
     public interface IArticuloRespositorio
     {
-        public Task<string> GetAll();
-        public Task<string> GetById(int Id);
+        public Task<List<ArticuloResponse>> GetAll();
+        public Task<ArticuloResponse> GetById(int Id);
 
-        public Task<int> Post(string xmlArticulo);
+        public Task<int> Post(ArticuloRequest model);
 
         public Task<string> Delete(int Id);
 
-        public Task<int> PostFoto(string xmlArticulo);
+        public Task<int> PostFoto(ArticuloFotoDTO model);
     }
 }
