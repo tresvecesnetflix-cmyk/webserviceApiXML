@@ -1,4 +1,5 @@
-﻿using webserviceApi.Repositorios;
+﻿using webserviceApi.DTOs;
+using webserviceApi.Repositorios;
 
 namespace webserviceApi.Servicios
 {
@@ -11,27 +12,27 @@ namespace webserviceApi.Servicios
             this.categoriaRepositorio = categoriaRepositorio;
         }
 
-        public Task<string> ListaCategoria()
+        public Task<List<CategoriaResponse>> ListaCategoria()
         {
             return categoriaRepositorio.ListaCategoria();
         }
 
-        public Task<string> GetById(int Id)
+        public Task<CategoriaResponse> GetById(int Id)
         {
             return categoriaRepositorio.GetById(Id);
 
         }
 
-        public Task<int>Post(string xmlCategoria)
+        public async Task<int> Post(CategoriaRequest model)
         {
 
-            return categoriaRepositorio.Post(xmlCategoria);
+            return await categoriaRepositorio.Post(model);
         }
 
-        public Task<int> Put(string xmlCategoria)
+        public Task<int> Put(CategoriaRequest model)
         {
 
-            return categoriaRepositorio.Put(xmlCategoria);
+            return categoriaRepositorio.Put(model);
         }
 
         public  Task<string> delete(int Id)
@@ -40,10 +41,10 @@ namespace webserviceApi.Servicios
             return categoriaRepositorio.delete(Id); 
         }
 
-        public Task<string> PostFoto(string xmlCategoria)
+        public Task<int> PostFoto(CategoriaFotoDTO model,string urlFoto)
         {
 
-            return categoriaRepositorio.PostFoto(xmlCategoria);
+            return categoriaRepositorio.PostFoto(model,urlFoto);
         }
 
     }

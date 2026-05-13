@@ -28,7 +28,7 @@ namespace webserviceApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetAll()
+        public async Task<ActionResult<List<CategoriaResponse>>> GetAll()
         {
 
             try
@@ -36,13 +36,12 @@ namespace webserviceApi.Controllers
                 var xml = await categoriaServicio.ListaCategoria();
 
 
-                if (!string.IsNullOrEmpty(xml)) 
+                if (xml is null) 
                 {
-                    return Content(xml);
-
+                    return NotFound();
                 }
 
-                return NotFound();
+             return Ok(xml);
             }
             catch (SqlException ex)
             {
@@ -53,7 +52,7 @@ namespace webserviceApi.Controllers
         }
 
         [HttpGet("{Id:int}", Name = "ObtenerCategoria")]
-        public async Task<IActionResult> ById(int Id)
+        public async Task<ActionResult> ById(int Id)
         {
 
     
@@ -62,26 +61,24 @@ namespace webserviceApi.Controllers
             try
             {
                 if (xml is null)
-                    return NotFound("no se encotro articulo");
+                    return NotFound("no se encotro categoria");
 
-                return Content(xml, "application/xml");
+                return Ok(xml);
 
             }
-            catch (Exception e)
+            catch (SqlException e)
             {
                 return StatusCode(500, $"Error:{e.Message}");
             }
         }
 
         [HttpPost]
-        [Consumes("application/xml")]
-        public async Task<ActionResult> Pots([FromBody] XmlDocument xmlCategoria)
+        public async Task<ActionResult> Pots(CategoriaRequest model)
+
         {
             try
             {
-                var xmlString = xmlCategoria.OuterXml;
-
-                var xmlResult = await categoriaServicio.Post(xmlString);
+                var xmlResult = await categoriaServicio.Post(model);
                 if (xmlResult == 0) 
                 {
                     return NotFound();
@@ -96,24 +93,20 @@ namespace webserviceApi.Controllers
    
         }
         [HttpPut]
-        [Consumes("application/xml")]
-
-        public async Task<ActionResult> put([FromBody] XmlDocument xmlCategoria)
+        public async Task<ActionResult> put([FromBody] CategoriaRequest model)
         {
 
-    
+            
             try
             {
-                var stringXML = xmlCategoria.OuterXml;
 
 
-
-                var xml = await categoriaServicio.Put(stringXML);
+                var xml = await categoriaServicio.Put(model);
 
                 if (xml == 0)
                     return NotFound("categoria no encontrada");
 
-                return NoContent();
+                return Ok(xml);
 
 
             }
@@ -167,27 +160,17 @@ namespace webserviceApi.Controllers
 
             }
 
-
-            var xmlString = $@"<Categoria>
-        <Titulo>{model.Titulo}</Titulo>
-        <Descripcion>{model.Descripcion}</Descripcion>
-        <Foto>{urlFoto}</Foto>
-         </Categoria>";
-
-
-
-
             try
             {
 
-                var xmlFoto = await categoriaServicio.PostFoto(xmlString);
+                var xmlFoto = await categoriaServicio.PostFoto(model,urlFoto);
 
-                if (!string.IsNullOrEmpty(xmlFoto))
+                if (xmlFoto == null)
                 {
-                    return Content(xmlFoto, "application/xml");
+                    return NotFound();
 
                 }
-                return NotFound("No existe categoria ");
+                return Ok(xmlFoto);
 
             }
             catch (SqlException ex)
