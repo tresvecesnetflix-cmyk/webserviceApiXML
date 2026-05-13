@@ -6,6 +6,7 @@ using System.Xml;
 using System.Data;
 using webserviceApi.Servicios.Externos;
 using webserviceApi.Servicios;
+using webserviceApi.DTOs;
 
 namespace webserviceApi.Controllers
 {
@@ -24,12 +25,9 @@ namespace webserviceApi.Controllers
 
         [HttpPost]
         [Authorize]
-        [Consumes("application/xml")]
-        public async Task<ActionResult> Post([FromBody] XmlDocument Carrito)
+        public async Task<ActionResult> Post([FromBody] CarritoRequest Carrito)
         {
 
-
-            var xmlString = Carrito.OuterXml;
 
             var usuario = await servicioUsuarios.ObtenerUsuario();
             if (usuario is null)
@@ -42,12 +40,12 @@ namespace webserviceApi.Controllers
             try
             {
 
-                var ResultadoXML = await carritoServicio.Post(xmlString,usuario.Id);
+                var ResultadoXML = await carritoServicio.Post(Carrito,usuario.Id);
 
-                if (string.IsNullOrEmpty(ResultadoXML))
+                if (ResultadoXML==null)
                     return BadRequest();
 
-                return Content(ResultadoXML, "application/xml");
+                return Ok(ResultadoXML);
             }
             catch (SqlException ex)
             {
@@ -58,11 +56,11 @@ namespace webserviceApi.Controllers
 
         }
 
-        [HttpGet("{Id}")]
+        [HttpGet("{Id:int}")]
         [Authorize]
-        public async Task<ActionResult> Get(int Id)
+        public async Task<ActionResult<CarritoResponse>> Get( int Id)
         {
-           
+     
             var usuario = await servicioUsuarios.ObtenerUsuario();
             if (usuario is null)
             {
@@ -74,10 +72,10 @@ namespace webserviceApi.Controllers
             {
                 var ResultadoXML = await carritoServicio.GetById(Id,usuario.Id);
 
-                if (string.IsNullOrEmpty(ResultadoXML))
+                if (ResultadoXML is null)
                     return BadRequest();
 
-                return Content(ResultadoXML, "application/xml");
+                return Ok(ResultadoXML);
 
 
             }
@@ -124,10 +122,8 @@ namespace webserviceApi.Controllers
 
         [HttpPut]
         [Authorize]
-        [Consumes("application/xml")]
-        public async Task<ActionResult> PutReducir([FromBody] XmlDocument Carrito)
+        public async Task<ActionResult> PutReducir([FromBody] CarritoRequest Carrito)
         {
-            var xmlString = Carrito.OuterXml;
 
             var usuario = await servicioUsuarios.ObtenerUsuario();
             if (usuario is null)
@@ -135,7 +131,7 @@ namespace webserviceApi.Controllers
 
             try
             {
-               var resultadoXML= await carritoServicio.Put(xmlString, usuario.Id);
+               var resultadoXML= await carritoServicio.Put(Carrito, usuario.Id);
 
 
                 if (string.IsNullOrEmpty(resultadoXML))

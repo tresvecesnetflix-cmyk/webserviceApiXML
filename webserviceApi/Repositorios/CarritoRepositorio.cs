@@ -2,6 +2,9 @@
 using Microsoft.Data.SqlClient;
 using webserviceApi.Servicios.Externos;
 using System.Data;
+using webserviceApi.DTOs;
+using System.Xml.Linq;
+using Microsoft.AspNetCore.Http.HttpResults;
 namespace webserviceApi.Repositorios
 {
     public class CarritoRepositorio:ICarritoRepositorio
@@ -14,8 +17,15 @@ namespace webserviceApi.Repositorios
             _configuration =  configuration.GetConnectionString("ConnectionString")!;
         }
 
-        public async Task<string> Post(string xmlString, string Id)
+        public async Task<string> Post(CarritoRequest model, string Id)
+
         {
+            var xmlString = $@"<CarritoItems>
+                            <CarritoItem>
+                            <ArticuloId>{model.ArticuloId}</ArticuloId>
+                            <Cantidad>{model.Cantidad}</Cantidad>
+                             </CarritoItem>
+                            </CarritoItems>";
             var con = new SqlConnection(_configuration);
 
             await con.OpenAsync();
@@ -23,9 +33,11 @@ namespace webserviceApi.Repositorios
             var xmlRespuesta = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_carritoByUser]",
                                      new { Carrito = xmlString, UsuarioId = Id }, commandType: CommandType.StoredProcedure);
 
-            return xmlRespuesta ?? string.Empty;
+
+
+            return xmlRespuesta;
         }
-        public async Task<string> GetById(int Id, string IdUsuario)
+        public async Task<CarritoResponse> GetById(int Id, string IdUsuario)
         {
             var xmlString = $@"<CarritoItems>
                             <CarritoItem>
@@ -38,7 +50,21 @@ namespace webserviceApi.Repositorios
             var xmlRespuesta = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_getCarritoByUser]"
                                      , new {Carrito= xmlString, usuarioId= IdUsuario}, commandType: CommandType.StoredProcedure);
 
-            return xmlRespuesta ?? string.Empty;
+
+
+            var carr = new CarritoResponse();
+      
+                var doc = XDocument.Parse(xmlRespuesta);
+
+                var carrito = doc.Descendants("CarritoItem").FirstOrDefault();
+
+
+                carr.AriticuloId = (int)carrito.Element("ArituculoId");
+                carr.Cantidad = (int)carrito.Element("Cantidad");
+                carr.subtotal = (decimal)carrito.Element("subtotal");
+
+            return carr ?? new CarritoResponse();
+
 
         }
 
@@ -61,17 +87,27 @@ namespace webserviceApi.Repositorios
 
 
 
-        public async Task<string> Put(string Carrito,string Id )
+        public async Task<string> Put(CarritoRequest Carrito,string Id )
         {
+            var carrt = $@"<CarritoItems>
+                            <CarritoItem>
+                            <Id>{Carrito.Id}</Id>
+                            <Cantidad>{Carrito.Cantidad}</Cantidad>
+                             </CarritoItem>
+                            </CarritoItems>";
+
 
             var con = new SqlConnection(_configuration);
 
             await con.OpenAsync();
 
             var xmlRespuesta = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_UpdateCarritoByUser]",
-                                      new {Carrito= Carrito, UsuarioId = Id}, commandType: CommandType.StoredProcedure);
+                                      new {Carrito= carrt, UsuarioId = Id}, commandType: CommandType.StoredProcedure);
 
-            return xmlRespuesta ?? string.Empty;    
+
+
+
+            return xmlRespuesta ?? string.Empty;
 
         }
     }

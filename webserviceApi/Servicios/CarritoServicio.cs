@@ -1,4 +1,5 @@
-﻿using webserviceApi.Repositorios;
+﻿using webserviceApi.DTOs;
+using webserviceApi.Repositorios;
 
 namespace webserviceApi.Servicios
 {
@@ -10,13 +11,13 @@ namespace webserviceApi.Servicios
         {
             this.carritoRepositorio = carritoRepositorio;
         }
-        public async  Task<string>Post(string xmlString, string Id)
+        public async Task<string> Post(CarritoRequest model, string Id)
         {
-            return await carritoRepositorio.Post( xmlString,  Id);
+            return await carritoRepositorio.Post( model,  Id);
 
         }
 
-        public async Task<string> GetById(int Id, string IdUsuario)
+        public async Task<CarritoResponse> GetById(int Id, string IdUsuario)
         {
             return await carritoRepositorio.GetById(Id, IdUsuario);
         }
@@ -25,7 +26,7 @@ namespace webserviceApi.Servicios
             return await carritoRepositorio.Delete(id, UsuarioId);
         }
 
-        public async Task<string> Put(string Carrito, string Id)
+        public async Task<string> Put(CarritoRequest Carrito, string Id)
         {
 
             return await carritoRepositorio.Put(Carrito, Id);
