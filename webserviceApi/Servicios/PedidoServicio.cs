@@ -18,15 +18,15 @@ namespace webserviceApi.Servicios
         }
 
 
-        public async Task<string> Post(string xmlDocument, string usuarioId)
+        public async Task<List<int>> Post(PedidosRequest model, string usuarioId)
         {
 
-            var respuesta = pedidoRepositorio.Post(xmlDocument, usuarioId);
+            var respuesta = pedidoRepositorio.Post(model, usuarioId);
 
             return await respuesta;
         }
 
-        public async Task<string> Get(int Id, string usuarioId, string UsuarioEmail)
+        public async Task<PedidosResponse> Get(int Id, string usuarioId, string UsuarioEmail)
         {
             var respuesta = pedidoRepositorio.Get(Id, usuarioId, UsuarioEmail);
 

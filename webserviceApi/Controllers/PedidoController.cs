@@ -29,13 +29,10 @@ namespace webserviceApi.Controllers
 
         [HttpPost]
         [Authorize]
-        [Consumes("application/xml")]
-        public async Task<ActionResult> Post(XmlDocument PedidoDetalle)
+        [Consumes("application/json")]
+        public async Task<ActionResult<List<int>>> Post(PedidosRequest model)
         {
 
-
-
-            var xmlString = PedidoDetalle.OuterXml;
 
             var usuario = await servicioUsuarios.ObtenerUsuario();
 
@@ -48,12 +45,12 @@ namespace webserviceApi.Controllers
             try
             {
 
-                var resultXML = await pedidoServicio.Post(xmlString,usuario.Id);
+                var resultXML = await pedidoServicio.Post(model,usuario.Id);
 
-                if (string.IsNullOrEmpty(resultXML))
+                if (!resultXML.Any())
                     return BadRequest();
 
-                return Content(resultXML, "application/xml");
+                return Ok(resultXML);
 
             }
             catch (SqlException ex)
@@ -68,7 +65,7 @@ namespace webserviceApi.Controllers
         [HttpGet]
         [Authorize]
 
-        public async Task<ActionResult> Get(int  Id)
+        public async Task<ActionResult<PedidosResponse>> Get(int  Id)
         {
             var connection = configuration.GetConnectionString("ConnectionString");
 
@@ -84,7 +81,7 @@ namespace webserviceApi.Controllers
 
                 var Resultado = await pedidoServicio.Get(Id,usuario.Id,usuario.Email);
 
-                if (!Resultado.Any())
+                if (Resultado==null)
                 {
 
                     return NotFound();
@@ -92,7 +89,7 @@ namespace webserviceApi.Controllers
 
             
 
-                return Content(Resultado,"application/xml");
+                return Ok(Resultado);
 
             }
             catch (SqlException ex)

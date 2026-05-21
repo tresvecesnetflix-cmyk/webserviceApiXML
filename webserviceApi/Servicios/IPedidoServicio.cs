@@ -5,8 +5,8 @@ namespace webserviceApi.Servicios
     public interface IPedidoServicio
     {
 
-        public Task<string> Post(string xmlDocument, string usuarioId);
-        public Task<string> Get(int Id, string usuarioId, string UsuarioEmail);
+        public Task<List<int>> Post(PedidosRequest model, string usuarioId);
+        public Task<PedidosResponse> Get(int Id, string usuarioId, string UsuarioEmail);
 
         public Task<string> Delete(int Id, string usuarioId);
 
