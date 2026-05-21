@@ -1,4 +1,5 @@
-﻿using webserviceApi.Repositorios;
+﻿using webserviceApi.DTOs;
+using webserviceApi.Repositorios;
 
 namespace webserviceApi.Servicios
 {
@@ -10,13 +11,13 @@ namespace webserviceApi.Servicios
         {
             this.direccionesRepositorio = direccionesRepositorio;
         }
-        public async Task<string> GetAll()
+        public async Task<List<DireccionesResponse>> GetAll()
         {
 
             return await direccionesRepositorio.GetAll();
         }
 
-        public async Task<string> GetById(int Id,string UsuarioId)
+        public async Task<DireccionesResponse> GetById(int Id,string UsuarioId)
         {
 
             return await direccionesRepositorio.GetById(Id, UsuarioId);
@@ -27,22 +28,22 @@ namespace webserviceApi.Servicios
             return await direccionesRepositorio.Delete(Id, usuarioId);
 
         }
-        public async Task<int> PostById(string Direccion, string usuarioId)
+        public async Task<int> PostById(DireccionesRequest model, string usuarioId)
         {
 
-            return await direccionesRepositorio.PostById(Direccion, usuarioId);
+            return await direccionesRepositorio.PostById(model, usuarioId);
         }
 
-        public async Task<int> Post(string Direccion)
+        public async Task<int> Post(DireccionesRequest model)
         {
-            return await direccionesRepositorio.Post(Direccion);
+            return await direccionesRepositorio.Post( model);
         }
 
 
-        public async Task<string> Put(string xmlDocument, string usuarioId)
+        public async Task<int> Put(DireccionesRequest model, string usuarioId)
         {
 
-            return await direccionesRepositorio.Put(xmlDocument, usuarioId);    
+            return await direccionesRepositorio.Put(model, usuarioId);    
         }
 
     }

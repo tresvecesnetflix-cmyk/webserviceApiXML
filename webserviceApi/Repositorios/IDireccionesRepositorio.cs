@@ -1,17 +1,19 @@
-﻿namespace webserviceApi.Repositorios
+﻿using webserviceApi.DTOs;
+
+namespace webserviceApi.Repositorios
 {
     public interface IDireccionesRepositorio
     {
-        public Task<string> GetAll();
-        public  Task<string> GetById(int Id,string UsuarioId);
+        public Task<List<DireccionesResponse>> GetAll();
+        public  Task<DireccionesResponse> GetById(int Id,string UsuarioId);
 
         public  Task<string> Delete(int Id, string usuarioId);
 
-        public Task<int> PostById(string Direccion, string usuarioId);
+        public Task<int> PostById(DireccionesRequest model, string usuarioId);
 
-        public  Task<int> Post(string Direccion);
+        public  Task<int> Post(DireccionesRequest model );
 
-        public Task<string> Put(string xmlDocument, string usuarioId);
+        public Task<int> Put(DireccionesRequest model, string usuarioId);
 
 
     }

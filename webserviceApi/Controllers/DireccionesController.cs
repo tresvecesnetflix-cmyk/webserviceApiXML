@@ -7,6 +7,7 @@ using System.Data;
 using System.Net;
 using System.Runtime.Serialization.DataContracts;
 using System.Xml;
+using webserviceApi.DTOs;
 using webserviceApi.Servicios;
 using webserviceApi.Servicios.Externos;
 
@@ -28,8 +29,7 @@ namespace webserviceApi.Controllers
         }
 
         [HttpGet]
-        [Authorize]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<List<DireccionesResponse>>> GetAll()
         {
           
             try
@@ -37,10 +37,12 @@ namespace webserviceApi.Controllers
 
                 var xmlResult = await direccionesServicio.GetAll();
 
-                if (string.IsNullOrEmpty(xmlResult))
-                    return NotFound("No se encontrar elementos");
+                if (xmlResult is null)
+                {
+                    return NotFound();
+                }
 
-                return Content(xmlResult, "application/xml");
+                return Ok(xmlResult);
             }
             catch (SqlException ex)
             {
@@ -54,7 +56,7 @@ namespace webserviceApi.Controllers
         [HttpGet("Id", Name = "ExtraerDireccion")]
         [Consumes("application/xml")]
         
-        public async Task<ActionResult> GetById(int Id)
+        public async Task<ActionResult<DireccionesResponse>> GetById(int Id)
         {
             var usuario = await _servicioUsuarios.ObtenerUsuario();
             if(usuario == null)
@@ -68,10 +70,10 @@ namespace webserviceApi.Controllers
 
                 var xmlResult = await direccionesServicio.GetById(Id,usuario.Id);
 
-                if (string.IsNullOrEmpty(xmlResult))
+                if (xmlResult==null)
                     return NotFound("No encontro resultado");
 
-                return Content(xmlResult, "application/xml");
+                return Ok(xmlResult);
 
             }
             catch (SqlException ex)
@@ -114,12 +116,11 @@ namespace webserviceApi.Controllers
         }
 
         [HttpPost("ByUser")]
-        [Consumes("application/xml")]
+        [Consumes("application/json")]
         [Authorize]
-        public async Task<IActionResult> PostByUser(XmlDocument xmlDirecciones)
+        public async Task<ActionResult> PostByUser([FromBody]DireccionesRequest model )
         {
 
-            var xmlString = xmlDirecciones.OuterXml;
 
             var usuario = await _servicioUsuarios.ObtenerUsuario();
             if(usuario == null)
@@ -128,12 +129,12 @@ namespace webserviceApi.Controllers
             }
             try
             {
-                var xmlResult = await direccionesServicio.PostById(xmlString,usuario.Id);
+                var xmlResult = await direccionesServicio.PostById(model, usuario.Id);
 
                 if (xmlResult == 0)
                     return NotFound();
 
-                return CreatedAtRoute("ExtraerDireccion", new { id = xmlResult }, xmlResult);
+                return CreatedAtRoute("ExtraerDireccion", new { Id = xmlResult }, xmlResult);
 
             }
             catch (SqlException ex)
@@ -145,23 +146,19 @@ namespace webserviceApi.Controllers
         }
 
         [HttpPost]
-        [Consumes("application/xml")]
-        public async Task<ActionResult> Post([FromBody] XmlDocument xmlDirecciones)
+        [Consumes("application/json")]
+        public async Task<ActionResult> Post([FromBody] DireccionesRequest model)
         {
 
            
-
-            var xmlString = xmlDirecciones.OuterXml;
-
-
             try
             {
 
-                var xmlResult = await direccionesServicio.Post(xmlString);
+                var xmlResult = await direccionesServicio.Post(model);
                 if (xmlResult == 0)
                     return NotFound();
 
-                return CreatedAtRoute("ExtraerDireccion", new { id = xmlResult }, xmlResult);
+                return CreatedAtRoute("ExtraerDireccion", new { Id = xmlResult }, xmlResult);
 
             }
             catch (SqlException ex)
@@ -172,12 +169,11 @@ namespace webserviceApi.Controllers
         }
 
         [HttpPut]
-        [Consumes("application/xml")]
+        [Consumes("application/json")]
         [Authorize]
-        public async Task<ActionResult> Put([FromBody] XmlDocument xmlDirecciones)
+        public async Task<ActionResult<int>> Put([FromBody] DireccionesRequest model)
         {
 
-            var xmlString = xmlDirecciones.OuterXml;
 
             var usuario = await _servicioUsuarios.ObtenerUsuario();
 
@@ -189,14 +185,14 @@ namespace webserviceApi.Controllers
             try
             {
 
-                var xmlResult = await direccionesServicio.Put(xmlString, usuario.Id);
-                if (string.IsNullOrEmpty(xmlResult))
+                var xmlResult = await direccionesServicio.Put(model, usuario.Id);
+                if (xmlResult==null)
                     return BadRequest("No se pudo ingresa la direcciones al usuario correspondiente");
 
 
 
 
-                return Content(xmlResult, "application/xml");
+                return CreatedAtRoute("ExtraerDireccion", new {Id=xmlResult},xmlResult);
             }
             catch (SqlException ex)
             {
