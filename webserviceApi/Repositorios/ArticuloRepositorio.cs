@@ -132,7 +132,7 @@ namespace webserviceApi.Repositorios
             return xmlResult ?? string.Empty;
         }
 
-        public async Task<int> PostFoto(ArticuloFotoDTO model)
+        public async Task<int> PostFoto(ArticuloRequest model)
         {
 
 
@@ -163,6 +163,8 @@ namespace webserviceApi.Repositorios
             await con.OpenAsync();
             var xmlResult = await con.QueryFirstOrDefaultAsync<int>("[dbo].sp_postFotoArticulo",
                    new { xmlArticulo }, commandType: CommandType.StoredProcedure);
+
+
             return xmlResult;
         }
     }

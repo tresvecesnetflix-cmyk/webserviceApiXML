@@ -129,7 +129,7 @@ namespace webserviceApi.Controllers
 
         [HttpPost("foto")]
         [Consumes("multipart/form-data")]
-        public async Task<ActionResult> PostFoto([FromForm] ArticuloFotoDTO model)
+        public async Task<ActionResult> PostFoto([FromForm] ArticuloRequest model)
         {
 
 

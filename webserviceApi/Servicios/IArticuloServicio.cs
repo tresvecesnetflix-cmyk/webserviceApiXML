@@ -12,6 +12,6 @@ namespace webserviceApi.Servicios
 
         public Task<string> Delete(int Id);
 
-        public Task<int> PostFoto(ArticuloFotoDTO model);
+        public Task<int> PostFoto(ArticuloRequest model);
     }
 }

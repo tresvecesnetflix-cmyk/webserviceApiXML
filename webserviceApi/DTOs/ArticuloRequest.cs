@@ -18,5 +18,8 @@
 
         public string TallasDisponbles { get; set; }
 
+        public IFormFile? Foto { get; set; }
+
+
     }
 }

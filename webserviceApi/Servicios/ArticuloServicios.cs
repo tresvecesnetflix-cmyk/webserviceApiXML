@@ -32,7 +32,7 @@ namespace webserviceApi.Servicios
             return await articuloRespositorio.Delete( Id);
         }
 
-        public async Task<int> PostFoto(ArticuloFotoDTO model)
+        public async Task<int> PostFoto(ArticuloRequest model)
         {
             return await articuloRespositorio.PostFoto( model);
         }   
