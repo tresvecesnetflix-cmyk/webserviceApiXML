@@ -129,8 +129,11 @@ namespace webserviceApi.Controllers
             try
             {
                 var xml = await categoriaServicio.delete(Id);
-                if(!string.IsNullOrEmpty(xml))
-                return NoContent();
+                if (xml != 0)
+                {
+                    return NoContent();
+
+                }
 
                 return NotFound();
             }
@@ -150,27 +153,20 @@ namespace webserviceApi.Controllers
 
         [HttpPost("potsFoto")]
         [Consumes("multipart/form-data")]
-        public async Task<ActionResult> PostFoto([FromForm]CategoriaFotoDTO model)
+        public async Task<ActionResult> PostFoto([FromForm]CategoriaRequest model)
         {
-            string? urlFoto = null;
-
-            if (model.Foto != null)
-            {
-                urlFoto = await _almacenadorDeArchivos.Almacenar("categorias", model.Foto);
-
-            }
-
+      
             try
             {
 
-                var xmlFoto = await categoriaServicio.PostFoto(model,urlFoto);
+                var xmlFoto = await categoriaServicio.PostFoto(model);
 
                 if (xmlFoto == null)
                 {
                     return NotFound();
 
                 }
-                return Ok(xmlFoto);
+                return CreatedAtRoute("ObtenerCategoria", new {id=xmlFoto},xmlFoto);
 
             }
             catch (SqlException ex)

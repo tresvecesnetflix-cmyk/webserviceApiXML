@@ -35,16 +35,16 @@ namespace webserviceApi.Servicios
             return categoriaRepositorio.Put(model);
         }
 
-        public  Task<string> delete(int Id)
+        public  Task<int> delete(int Id)
         {
 
             return categoriaRepositorio.delete(Id); 
         }
 
-        public Task<int> PostFoto(CategoriaFotoDTO model,string urlFoto)
+        public Task<int> PostFoto(CategoriaRequest model)
         {
 
-            return categoriaRepositorio.PostFoto(model,urlFoto);
+            return categoriaRepositorio.PostFoto(model);
         }
 
     }

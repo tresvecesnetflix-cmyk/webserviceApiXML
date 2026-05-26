@@ -12,9 +12,9 @@ namespace webserviceApi.Servicios
 
         public Task<int> Put(CategoriaRequest model);
 
-        public Task<string> delete(int Id);
+        public Task<int> delete(int Id);
 
-        public Task<int> PostFoto(CategoriaFotoDTO model,string urlFoto);
+        public Task<int> PostFoto(CategoriaRequest model);
 
 
     }

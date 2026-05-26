@@ -4,15 +4,19 @@ using System.Data;
 using System.Xml.Linq;
 using System.Xml.Schema;
 using webserviceApi.DTOs;
+using webserviceApi.Servicios.Externos;
 
 namespace webserviceApi.Repositorios
 {
     public class CategoriaRepositorio:ICategoriaRepositorio
     {
         private readonly string _con;
-        public CategoriaRepositorio(IConfiguration configuration)
+        private readonly IAlmacenadorDeArchivos almacenadorDeArchivos;
+
+        public CategoriaRepositorio(IConfiguration configuration, IAlmacenadorDeArchivos almacenadorDeArchivos)
         {
-            _con = configuration.GetConnectionString("ConnectionString")!;  
+            _con = configuration.GetConnectionString("ConnectionString")!;
+            this.almacenadorDeArchivos = almacenadorDeArchivos;
         }
 
         public async Task<List<CategoriaResponse>> ListaCategoria()
@@ -130,7 +134,7 @@ namespace webserviceApi.Repositorios
           
         }
 
-        public async Task<string> delete(int Id)
+        public async Task<int> delete(int Id)
         {
             using var con=  new SqlConnection(_con);
           var xmlString=$@"
@@ -141,20 +145,29 @@ namespace webserviceApi.Repositorios
 
             await con.OpenAsync();
 
-            var xmlResult = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_DeleteCategoria]", new { xmlCategoria = xmlString }, commandType: CommandType.StoredProcedure);
+            var xmlResult = await con.QueryFirstOrDefaultAsync<int>("[dbo].[spu_DeleteCategoria]", new { xmlCategoria = xmlString }, commandType: CommandType.StoredProcedure);
 
-            return xmlResult ?? string.Empty;
+            return xmlResult;
 
         }
 
-        public async Task<int> PostFoto(CategoriaFotoDTO model, string UrlFoto)
+        public async Task<int> PostFoto(CategoriaRequest model)
         {
+            string? urlFoto = null;
+
+            if (model.Foto != null)
+            {
+                urlFoto = await almacenadorDeArchivos.Almacenar("categorias", model.Foto);
+
+            }
+
+
             var xmlCategoria = $@"
                 <Categorias>
                 <Categoria>
                 <Titulo>{model.Titulo}</Titulo>
                 <Descripcion>{model.Descripcion}</Descripcion>
-                <Foto>{UrlFoto}</Foto>
+                <Foto>{urlFoto}</Foto>
                 </Categoria>
                 </Categorias>
                ";
