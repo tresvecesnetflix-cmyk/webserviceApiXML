@@ -131,7 +131,7 @@ namespace webserviceApi.Controllers
                 var xml = await categoriaServicio.delete(Id);
                 if (xml != 0)
                 {
-                    return NoContent();
+                    return Ok(xml);
 
                 }
 
