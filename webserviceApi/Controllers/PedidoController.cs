@@ -14,7 +14,7 @@ namespace webserviceApi.Controllers
 {
     [ApiController]
     [Route("api/pedidos")]
-    public class PedidoController:ControllerBase
+    public class PedidoController : ControllerBase
     {
         private readonly IServicioUsuarios servicioUsuarios;
         private readonly IConfiguration configuration;
@@ -45,7 +45,7 @@ namespace webserviceApi.Controllers
             try
             {
 
-                var resultXML = await pedidoServicio.Post(model,usuario.Id);
+                var resultXML = await pedidoServicio.Post(model, usuario.Id);
 
                 if (!resultXML.Any())
                     return BadRequest();
@@ -65,7 +65,7 @@ namespace webserviceApi.Controllers
         [HttpGet("{Id:int}")]
         [Authorize]
 
-        public async Task<ActionResult<PedidosResponse>> Get(int  Id)
+        public async Task<ActionResult<PedidosResponse>> Get(int Id)
         {
 
             var usuario = await servicioUsuarios.ObtenerUsuario();
@@ -73,15 +73,15 @@ namespace webserviceApi.Controllers
 
             try
             {
-                var Resultado = await pedidoServicio.Get(Id,usuario.Id);
+                var Resultado = await pedidoServicio.Get(Id, usuario.Id);
 
-                if (Resultado==null)
+                if (Resultado == null)
                 {
 
                     return NotFound();
                 }
 
-            
+
 
                 return Ok(Resultado);
 
@@ -94,7 +94,7 @@ namespace webserviceApi.Controllers
 
         }
 
-        [HttpDelete]
+        [HttpDelete("{Id:int}")]
         [Authorize]
         public async Task<ActionResult> Delete(int Id)
         {
@@ -105,11 +105,10 @@ namespace webserviceApi.Controllers
             var usuario = await servicioUsuarios.ObtenerUsuario();
             if (usuario == null)
                 return Unauthorized();
-            Console.Write(usuario.Id);
             try
             {
                 var ResultadoXml = await pedidoServicio.Delete(Id,usuario.Id);
-                return Content(ResultadoXml, "application/xml");
+                return Ok(ResultadoXml);
 
             }
             catch (SqlException ex)

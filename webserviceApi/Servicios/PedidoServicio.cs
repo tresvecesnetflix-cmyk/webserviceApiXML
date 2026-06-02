@@ -34,7 +34,7 @@ namespace webserviceApi.Servicios
 
         }
 
-        public async Task<string> Delete(int Id, string usuarioId)
+        public async Task<int> Delete(int Id, string usuarioId)
         {
             var respuesta = pedidoRepositorio.Delete(Id, usuarioId);
 

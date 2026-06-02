@@ -99,7 +99,7 @@ namespace webserviceApi.Repositorios
 
         }
 
-        public async Task<string> Delete(int Id , string usuarioId)
+        public async Task<int> Delete(int Id , string usuarioId)
         {
 
             var con = new SqlConnection(_configuration);
@@ -114,7 +114,24 @@ namespace webserviceApi.Repositorios
             var xmlResult = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_deletePedidoDetalleByUser]",
                     new { DetallePedido = xmlString, UsuarioId = usuarioId }, commandType: CommandType.StoredProcedure);
 
-            return xmlResult ?? string.Empty;
+            var doc = XDocument.Parse(xmlResult);
+
+            var resultado = doc.Descendants("RESULTADO").FirstOrDefault().Value;
+
+            int id;
+
+            if (resultado == "1")
+            {
+
+                id= Convert.ToInt32(resultado);
+
+
+                return id;
+                    
+                    }
+
+
+            return 0;
 
         }
     }
