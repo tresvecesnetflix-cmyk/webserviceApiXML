@@ -54,7 +54,7 @@ namespace webserviceApi.Repositorios
 
         }
 
-        public async Task<PedidosResponse> Get(int Id, string usuarioId, string UsuarioEmail)
+        public async Task<PedidosResponse> Get(int Id, string usuarioId )
         {
             var con = new SqlConnection(_configuration);
 

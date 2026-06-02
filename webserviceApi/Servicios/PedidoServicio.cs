@@ -26,9 +26,9 @@ namespace webserviceApi.Servicios
             return await respuesta;
         }
 
-        public async Task<PedidosResponse> Get(int Id, string usuarioId, string UsuarioEmail)
+        public async Task<PedidosResponse> Get(int Id, string usuarioId)
         {
-            var respuesta = pedidoRepositorio.Get(Id, usuarioId, UsuarioEmail);
+            var respuesta = pedidoRepositorio.Get(Id, usuarioId);
 
             return await respuesta;
 

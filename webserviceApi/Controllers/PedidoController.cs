@@ -62,24 +62,18 @@ namespace webserviceApi.Controllers
         }
 
 
-        [HttpGet]
+        [HttpGet("{Id:int}")]
         [Authorize]
 
         public async Task<ActionResult<PedidosResponse>> Get(int  Id)
         {
-            var connection = configuration.GetConnectionString("ConnectionString");
-
-            using var con = new SqlConnection(connection);
 
             var usuario = await servicioUsuarios.ObtenerUsuario();
 
 
             try
             {
-
-                await con.OpenAsync();
-
-                var Resultado = await pedidoServicio.Get(Id,usuario.Id,usuario.Email);
+                var Resultado = await pedidoServicio.Get(Id,usuario.Id);
 
                 if (Resultado==null)
                 {
