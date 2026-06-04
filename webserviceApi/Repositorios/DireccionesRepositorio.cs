@@ -49,6 +49,8 @@ namespace webserviceApi.Repositorios
                    CiudadMunicipio = (string)dir.Element("CiudadMunicipio"),
                    Colonia = (string)dir.Element("Colonia"),
                    Direccions = (string)dir.Element("Direccions"),
+                   Id = (int)dir.Element("Id"),
+
 
                };
 
@@ -79,25 +81,34 @@ namespace webserviceApi.Repositorios
 
             var dir = doc.Descendants("Direccion").FirstOrDefault();
 
-            var direccion = new DireccionesResponse();
+            if (dir!=null)
+            {
 
-            direccion.Nombres = (string)dir.Element("Nombres");
-            direccion.Apellidos = (string)dir.Element("Apellidos");
-            direccion.Correo = (string)dir.Element("Correo");
-            direccion.Telefono = (string)dir.Element("Telefono");
-            direccion.TipoDocumento = (string)dir.Element("TipoDocumento");
-            direccion.NumeroDocumneto = (string)dir.Element("NumeroDocumneto");
-            direccion.Pais = (string)dir.Element("Pais");
-            direccion.Departamento = (string)dir.Element("Departamento");
-            direccion.CiudadMunicipio = (string)dir.Element("CiudadMunicipio");
-            direccion.Colonia = (string)dir.Element("Colonia");
-            direccion.Direccions = (string)dir.Element("Direccions");
+                var direccion = new DireccionesResponse();
+
+                direccion.Nombres = (string)dir.Element("Nombres");
+                direccion.Apellidos = (string)dir.Element("Apellidos");
+                direccion.Correo = (string)dir.Element("Correo");
+                direccion.Telefono = (string)dir.Element("Telefono");
+                direccion.TipoDocumento = (string)dir.Element("TipoDocumento");
+                direccion.NumeroDocumneto = (string)dir.Element("NumeroDocumneto");
+                direccion.Pais = (string)dir.Element("Pais");
+                direccion.Departamento = (string)dir.Element("Departamento");
+                direccion.CiudadMunicipio = (string)dir.Element("CiudadMunicipio");
+                direccion.Colonia = (string)dir.Element("Colonia");
+                direccion.Direccions = (string)dir.Element("Direccions");
 
 
-            return direccion ?? new DireccionesResponse();
+                return direccion ?? new DireccionesResponse();
+
+            }
+
+            return new DireccionesResponse();
+
+
         }
 
-        public async Task<string> Delete(int Id, string usuarioId)
+        public async Task<int> Delete(int Id, string usuarioId)
         {
             var con = new SqlConnection(_configuration);
 
@@ -110,7 +121,17 @@ namespace webserviceApi.Repositorios
             var xmlResult = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_DeleteDirecciones]",
                               new { xmlDirecciones = xmlString, UsuarioId= usuarioId }, commandType: CommandType.StoredProcedure);
 
-            return xmlResult ?? string.Empty;
+            var doc = XDocument.Parse(xmlResult);
+
+            var dir = doc.Descendants("Resultado").FirstOrDefault().Value;
+
+            if (dir=="1")
+            {
+                int id = Convert.ToInt32(dir);
+                return id;
+            }
+
+            return Convert.ToInt32(dir);
 
         }
 
@@ -202,14 +223,18 @@ namespace webserviceApi.Repositorios
 
             var doc = XDocument.Parse(xmlResult);
 
-            var resultado = doc.Descendants("Resultado").FirstOrDefault();
+            var resultado = doc.Descendants("Resultado").FirstOrDefault().Value;
 
             int Id;
 
-            Id = (int)resultado.Element("Id");
+            if (resultado=="1")
+            {
+
+                return Convert.ToInt32(resultado);
+            }
 
 
-            return Id;
+            return Convert.ToInt32(resultado); 
 
         }
     }

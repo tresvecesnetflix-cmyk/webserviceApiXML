@@ -23,7 +23,7 @@ namespace webserviceApi.Servicios
             return await direccionesRepositorio.GetById(Id, UsuarioId);
         }
 
-        public async Task<string> Delete(int Id, string usuarioId)
+        public async Task<int> Delete(int Id, string usuarioId)
         {
             return await direccionesRepositorio.Delete(Id, usuarioId);
 

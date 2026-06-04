@@ -5,6 +5,7 @@ using System.Data;
 using webserviceApi.DTOs;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Http.HttpResults;
+using System.Xml;
 namespace webserviceApi.Repositorios
 {
     public class CarritoRepositorio:ICarritoRepositorio
@@ -34,9 +35,27 @@ namespace webserviceApi.Repositorios
                                      new { Carrito = xmlString, UsuarioId = Id }, commandType: CommandType.StoredProcedure);
 
 
+            var doc = XDocument.Parse(xmlRespuesta);
 
-            return xmlRespuesta;
+            var estado = doc.Descendants("Estado").FirstOrDefault().Value;
+
+
+            var mensaje = doc.Descendants("Resultado").FirstOrDefault().Value;
+
+
+            if (estado == "Error")
+            {
+                var resultado = estado;
+
+                throw new Exception(mensaje);
+            }
+
+
+
+            return mensaje;
         }
+
+
         public async Task<CarritoResponse> GetById(int Id, string IdUsuario)
         {
             var xmlString = $@"<CarritoItems>
@@ -59,9 +78,17 @@ namespace webserviceApi.Repositorios
                 var carrito = doc.Descendants("CarritoItem").FirstOrDefault();
 
 
+
+            if (carrito!=null)
+            {
+
                 carr.AriticuloId = (int)carrito.Element("ArituculoId");
                 carr.Cantidad = (int)carrito.Element("Cantidad");
                 carr.subtotal = (decimal)carrito.Element("subtotal");
+
+                return carr;
+
+            }
 
             return carr ?? new CarritoResponse();
 
@@ -81,7 +108,21 @@ namespace webserviceApi.Repositorios
             var xmlRespuesta = await con.QueryFirstOrDefaultAsync<string>("[dbo].[spu_deleteCarritoByUser]"
                                      , new { Carrito = xmlString, usuarioId = UsuarioId }, commandType: CommandType.StoredProcedure);
 
-            return xmlRespuesta ?? string.Empty;
+            var doc = XDocument.Parse(xmlRespuesta);
+
+
+            var mensaje = doc.Descendants("Mensaje").FirstOrDefault().Value;
+
+
+            var estado = doc.Descendants("Estado").FirstOrDefault().Value;
+
+            if (estado=="Error")
+            {
+                throw new Exception(mensaje);
+
+            }
+
+            return mensaje;
 
         }
 
@@ -105,9 +146,19 @@ namespace webserviceApi.Repositorios
                                       new {Carrito= carrt, UsuarioId = Id}, commandType: CommandType.StoredProcedure);
 
 
+            var doc = XDocument.Parse(xmlRespuesta);
 
+            var Estado = doc.Descendants("Estado").FirstOrDefault().Value;
 
-            return xmlRespuesta ?? string.Empty;
+            var Mensaje = doc.Descendants("Mensaje").FirstOrDefault().Value;
+
+            if (Estado=="Error")
+            {
+
+                throw new Exception(Mensaje);
+            }
+
+            return Mensaje;
 
         }
     }

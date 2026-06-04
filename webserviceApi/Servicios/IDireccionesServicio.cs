@@ -7,7 +7,7 @@ namespace webserviceApi.Servicios
         public Task<List<DireccionesResponse>> GetAll();
         public Task<DireccionesResponse> GetById(int Id,string UsuarioId);
 
-        public Task<string> Delete(int Id, string usuarioId);
+        public Task<int> Delete(int Id, string usuarioId);
 
         public Task<int> PostById(DireccionesRequest model, string usuarioId);
 

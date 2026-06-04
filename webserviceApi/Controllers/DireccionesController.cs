@@ -53,8 +53,7 @@ namespace webserviceApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("Id", Name = "ExtraerDireccion")]
-        [Consumes("application/xml")]
+        [HttpGet("{Id:int}", Name = "ExtraerDireccion")]
         
         public async Task<ActionResult<DireccionesResponse>> GetById(int Id)
         {
@@ -85,9 +84,9 @@ namespace webserviceApi.Controllers
 
         }
 
-        [HttpDelete]
+        [HttpDelete("{Id:int}")]
         [Authorize]
-        public async Task<IActionResult> Delete(int Id)
+        public async Task<ActionResult> Delete(int Id)
         {
 
             var usuario = await _servicioUsuarios.ObtenerUsuario();
@@ -101,10 +100,16 @@ namespace webserviceApi.Controllers
 
                 var xmlResult = await direccionesServicio.Delete(Id, usuario.Id);
 
-                if (string.IsNullOrEmpty(xmlResult))
-                    return NotFound();
+                if (xmlResult != 0)
+                {
+                    return Ok(xmlResult);
 
-                return Content(xmlResult, "application/xml");
+
+                }
+
+                return NotFound();
+
+
 
             }
             catch (SqlException ex)
