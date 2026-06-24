@@ -7,5 +7,7 @@
 
         public int Cantidad { get; set; }
 
+        public IFormFile Foto { get; set; }
+
     }
 }

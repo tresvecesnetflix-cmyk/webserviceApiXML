@@ -40,6 +40,7 @@ namespace webserviceApi.Repositorios
             {
                 var art = new ArticuloResponse
                 {
+                    Id=(int)item.Element("ArticuloId"),
                     Nombre = (string)item.Element("Nombre"),
                     Descripcion = (string)item.Element("Descripcion"),
                     Precio = (decimal)item.Element("Precio"),
